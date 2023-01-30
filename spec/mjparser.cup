@@ -56,13 +56,11 @@ scan with {:
 //Keywords
 terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH;
 
-precedence left ELSE;
-
 //Special Characters
 terminal LBRACE, RBRACE, SEMI, LPAREN, RPAREN, LSQUAREBR, RSQUAREBR;
 
 //Operators
-terminal PLUS, MINUS, STAR, FWDSLASH, PERC, DBLEQ, EXLEQ, GRT, GRTEQ, LSS, LSSEQ, DBLAMP, DBLVER, COMMA, EQUAL, DBLPLUS, DBLMINUS
+terminal PLUS, MINUS, STAR, FWDSLASH, PERC, DBLEQ, EXLEQ, GRT, GRTEQ, LSS, LSSEQ, DBLAMP, DBLVER, COMMA, EQUAL, DBLPLUS, DBLMINUS;
 
 //Value Tokens
 terminal Integer NUMBER;
@@ -79,6 +77,7 @@ nonterminal GlobalDecl, ConstDecl, VarDecl, ClassDecl, VarIdent, FormalParamDecl
 //Lists
 nonterminal GlobalDeclList, MethodDeclList, ConstDeclList, VarDeclInnerList, VarDeclList;
 nonterminal StatementList, FormalParamList, DesignatorList, ActualParamList;
+nonterminal ExprInner;
 
 //Types and calculations
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact;
@@ -91,8 +90,10 @@ nonterminal ConstIdentValue;
 nonterminal Inheritance, FormPars, ActualPars;
 
 //Statements
-nonterminal Statement, DesignatorStatement, ConditionStatements, 
+nonterminal Statement, DesignatorStatement, ConditionStatements;
 
+//Precedences
+precedence left ELSE;
 
 //GRAMMAR
 Program ::= (Program) PROG ProgName:p GlobalDeclList LBRACE MethodDeclList RBRACE 
@@ -141,6 +142,7 @@ VarDeclList ::= (VarDeclList) VarDeclList VarDecl
 				;
 				
 ClassDecl ::= (ClassDecl) CLASS IDENT:clNAME Inheritance LBRACE VarDeclList RBRACE LBRACE MethodDeclList RBRACE
+				;
 
 Inheritance ::= (Extends) EXTENDS Type:parent 
 				| /*epsilon*/
@@ -151,7 +153,7 @@ MethodDeclList ::= (MethodDeclarations) MethodDeclList MethodDecl
 				;
 
 MethodDecl ::= (MethodDecl) MethodTypeName LPAREN FormPars RPAREN VarDeclList LBRACE StatementList RBRACE 
-			   ;
+			   	;
 
 MethodTypeName ::= (MethodTypeName) Type:retType IDENT:methName
 				;
@@ -210,7 +212,7 @@ DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e
 				;
 
 Designator ::= (Designator) IDENT:name
-;
+				;
 
 DesignatorList ::= (SingleDesignator) Designator
 				| (MultiDesignator) DesignatorList COMMA Designator
@@ -247,7 +249,7 @@ ExprInner ::= (AddExpr) Expr:te Addop Term:t
 
 Term ::= (FactSingle) Factor:t
 				| (FactExpr) Term:te Mulop Factor:t
-;
+				;
 
 Factor ::= (ConstNum) NUMBER
 				| (ConstChar) CHAR
