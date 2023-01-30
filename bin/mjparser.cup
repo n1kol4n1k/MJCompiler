@@ -54,7 +54,7 @@ scan with {:
 :}
 
 //Keywords
-terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH;
+terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, /*VOID,*/ EXTENDS, CONTINUE, /*FOREACH*/;
 
 //Special Characters
 terminal LBRACE, RBRACE, SEMI, LPAREN, RPAREN, LSQUAREBR, RSQUAREBR;
@@ -193,7 +193,6 @@ Statement ::= (DesignatorStmt) DesignatorStatement SEMI
 			  (ReadStmt) READ LPAREN Designator RPAREN SEMI
 			  |
 			  (PrintStmt) PRINT LPAREN Expr RPAREN SEMI
-			  | 
 			  ;
 
 ConditionStatements ::= (CndSingleStmt) Statement
@@ -243,7 +242,7 @@ Expr ::= (NegativeExpr) MINUS ExprInner
 				| (PositiveExpr) ExprInner
 				;
 			  			  
-ExprInner ::= (AddExpr) Expr:te Addop Term:t
+ExprInner ::= (AddExpr) ExprInner:te Addop Term:t
 		 		| (TermExpr) Term:t
 		 		;
 
@@ -256,9 +255,9 @@ Factor ::= (ConstNum) NUMBER
 				| (ConstBool) BOOL
 				| (Var) Designator:d
 		    	| (FuncCall) Designator:func LPAREN ActualPars RPAREN
-		    	| LPAREN Expr RPAREN
-		    	| NEW Type:t LSQUAREBR Expr RSQUAREBR
-		    	| NEW Type:t LPAREN ActualPars RPAREN
+		    	| (ExprBrackets) LPAREN Expr RPAREN
+		    	| (NewArray) NEW Type:t LSQUAREBR Expr RSQUAREBR
+		    	| (NewSingle) NEW Type:t LPAREN ActualPars RPAREN
 		   		;
 
 ActualPars ::= (Actuals) ActualParamList 

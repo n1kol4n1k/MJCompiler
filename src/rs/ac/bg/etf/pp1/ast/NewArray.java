@@ -1,20 +1,20 @@
 // generated with ast extension for cup
 // version 0.8
-// 30/0/2023 22:32:39
+// 31/0/2023 0:0:49
 
 
 package src.rs.ac.bg.etf.pp1.ast;
 
-public class FactorDerived3 extends Factor {
+public class NewArray extends Factor {
 
     private Type Type;
-    private ActualPars ActualPars;
+    private Expr Expr;
 
-    public FactorDerived3 (Type Type, ActualPars ActualPars) {
+    public NewArray (Type Type, Expr Expr) {
         this.Type=Type;
         if(Type!=null) Type.setParent(this);
-        this.ActualPars=ActualPars;
-        if(ActualPars!=null) ActualPars.setParent(this);
+        this.Expr=Expr;
+        if(Expr!=null) Expr.setParent(this);
     }
 
     public Type getType() {
@@ -25,12 +25,12 @@ public class FactorDerived3 extends Factor {
         this.Type=Type;
     }
 
-    public ActualPars getActualPars() {
-        return ActualPars;
+    public Expr getExpr() {
+        return Expr;
     }
 
-    public void setActualPars(ActualPars ActualPars) {
-        this.ActualPars=ActualPars;
+    public void setExpr(Expr Expr) {
+        this.Expr=Expr;
     }
 
     public void accept(Visitor visitor) {
@@ -39,25 +39,25 @@ public class FactorDerived3 extends Factor {
 
     public void childrenAccept(Visitor visitor) {
         if(Type!=null) Type.accept(visitor);
-        if(ActualPars!=null) ActualPars.accept(visitor);
+        if(Expr!=null) Expr.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
         if(Type!=null) Type.traverseTopDown(visitor);
-        if(ActualPars!=null) ActualPars.traverseTopDown(visitor);
+        if(Expr!=null) Expr.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
         if(Type!=null) Type.traverseBottomUp(visitor);
-        if(ActualPars!=null) ActualPars.traverseBottomUp(visitor);
+        if(Expr!=null) Expr.traverseBottomUp(visitor);
         accept(visitor);
     }
 
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("FactorDerived3(\n");
+        buffer.append("NewArray(\n");
 
         if(Type!=null)
             buffer.append(Type.toString("  "+tab));
@@ -65,14 +65,14 @@ public class FactorDerived3 extends Factor {
             buffer.append(tab+"  null");
         buffer.append("\n");
 
-        if(ActualPars!=null)
-            buffer.append(ActualPars.toString("  "+tab));
+        if(Expr!=null)
+            buffer.append(Expr.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [FactorDerived3]");
+        buffer.append(") [NewArray]");
         return buffer.toString();
     }
 }

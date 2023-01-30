@@ -54,7 +54,7 @@ scan with {:
 :}
 
 //Keywords
-terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH;
+terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, /*VOID,*/ EXTENDS, CONTINUE /*FOREACH*/;
 
 //Special Characters
 terminal LBRACE, RBRACE, SEMI, LPAREN, RPAREN, LSQUAREBR, RSQUAREBR;
@@ -211,7 +211,6 @@ Statement ::= (DesignatorStmt) DesignatorStatement:D1 SEMI {: RESULT=new Designa
 			  (ReadStmt) READ LPAREN Designator:D1 RPAREN SEMI {: RESULT=new ReadStmt(D1); RESULT.setLine(D1left); :}
 			  |
 			  (PrintStmt) PRINT LPAREN Expr:E1 RPAREN SEMI {: RESULT=new PrintStmt(E1); RESULT.setLine(E1left); :}
-			  | {: RESULT=new StatementDerived1(); :} 
 			  ;
 
 ConditionStatements ::= (CndSingleStmt) Statement:S1 {: RESULT=new CndSingleStmt(S1); RESULT.setLine(S1left); :}
@@ -261,7 +260,7 @@ Expr ::= (NegativeExpr) MINUS ExprInner:E1 {: RESULT=new NegativeExpr(E1); RESUL
 				| (PositiveExpr) ExprInner:E1 {: RESULT=new PositiveExpr(E1); RESULT.setLine(E1left); :}
 				;
 			  			  
-ExprInner ::= (AddExpr) Expr:te Addop:A1 Term:t {: RESULT=new AddExpr(te, A1, t); RESULT.setLine(teleft); :}
+ExprInner ::= (AddExpr) ExprInner:te Addop:A1 Term:t {: RESULT=new AddExpr(te, A1, t); RESULT.setLine(teleft); :}
 		 		| (TermExpr) Term:t {: RESULT=new TermExpr(t); RESULT.setLine(tleft); :}
 		 		;
 
@@ -274,9 +273,9 @@ Factor ::= (ConstNum) NUMBER:N1 {: RESULT=new ConstNum(N1); RESULT.setLine(N1lef
 				| (ConstBool) BOOL:B1 {: RESULT=new ConstBool(B1); RESULT.setLine(B1left); :}
 				| (Var) Designator:d {: RESULT=new Var(d); RESULT.setLine(dleft); :}
 		    	| (FuncCall) Designator:func LPAREN ActualPars:A1 RPAREN {: RESULT=new FuncCall(func, A1); RESULT.setLine(funcleft); :}
-		    	| LPAREN Expr:E1 RPAREN {: RESULT=new FactorDerived1(E1); RESULT.setLine(E1left); :}
-		    	| NEW Type:t LSQUAREBR Expr:E1 RSQUAREBR {: RESULT=new FactorDerived2(t, E1); RESULT.setLine(tleft); :}
-		    	| NEW Type:t LPAREN ActualPars:A1 RPAREN {: RESULT=new FactorDerived3(t, A1); RESULT.setLine(tleft); :}
+		    	| (ExprBrackets) LPAREN Expr:E1 RPAREN {: RESULT=new ExprBrackets(E1); RESULT.setLine(E1left); :}
+		    	| (NewArray) NEW Type:t LSQUAREBR Expr:E1 RSQUAREBR {: RESULT=new NewArray(t, E1); RESULT.setLine(tleft); :}
+		    	| (NewSingle) NEW Type:t LPAREN ActualPars:A1 RPAREN {: RESULT=new NewSingle(t, A1); RESULT.setLine(tleft); :}
 		   		;
 
 ActualPars ::= (Actuals) ActualParamList:A1 {: RESULT=new Actuals(A1); RESULT.setLine(A1left); :} 

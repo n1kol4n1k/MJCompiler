@@ -1,28 +1,17 @@
 // generated with ast extension for cup
 // version 0.8
-// 30/0/2023 22:32:39
+// 31/0/2023 0:0:49
 
 
 package src.rs.ac.bg.etf.pp1.ast;
 
-public class FactorDerived2 extends Factor {
+public class ExprBrackets extends Factor {
 
-    private Type Type;
     private Expr Expr;
 
-    public FactorDerived2 (Type Type, Expr Expr) {
-        this.Type=Type;
-        if(Type!=null) Type.setParent(this);
+    public ExprBrackets (Expr Expr) {
         this.Expr=Expr;
         if(Expr!=null) Expr.setParent(this);
-    }
-
-    public Type getType() {
-        return Type;
-    }
-
-    public void setType(Type Type) {
-        this.Type=Type;
     }
 
     public Expr getExpr() {
@@ -38,18 +27,15 @@ public class FactorDerived2 extends Factor {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(Type!=null) Type.accept(visitor);
         if(Expr!=null) Expr.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(Type!=null) Type.traverseTopDown(visitor);
         if(Expr!=null) Expr.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(Type!=null) Type.traverseBottomUp(visitor);
         if(Expr!=null) Expr.traverseBottomUp(visitor);
         accept(visitor);
     }
@@ -57,13 +43,7 @@ public class FactorDerived2 extends Factor {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("FactorDerived2(\n");
-
-        if(Type!=null)
-            buffer.append(Type.toString("  "+tab));
-        else
-            buffer.append(tab+"  null");
-        buffer.append("\n");
+        buffer.append("ExprBrackets(\n");
 
         if(Expr!=null)
             buffer.append(Expr.toString("  "+tab));
@@ -72,7 +52,7 @@ public class FactorDerived2 extends Factor {
         buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [FactorDerived2]");
+        buffer.append(") [ExprBrackets]");
         return buffer.toString();
     }
 }
