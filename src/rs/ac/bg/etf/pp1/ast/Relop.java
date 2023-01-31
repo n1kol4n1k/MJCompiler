@@ -1,9 +1,9 @@
 // generated with ast extension for cup
 // version 0.8
-// 31/0/2023 0:0:49
+// 31/0/2023 19:4:4
 
 
-package src.rs.ac.bg.etf.pp1.ast;
+package rs.ac.bg.etf.pp1.ast;
 
 public abstract class Relop implements SyntaxNode {
 

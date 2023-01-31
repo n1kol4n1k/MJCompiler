@@ -3,16 +3,16 @@ import org.apache.log4j.Logger;
 
 import rs.ac.bg.etf.pp1.ast.AddExpr;
 import rs.ac.bg.etf.pp1.ast.Assignment;
-import rs.ac.bg.etf.pp1.ast.Const;
+//import rs.ac.bg.etf.pp1.ast.Const;
 import rs.ac.bg.etf.pp1.ast.Designator;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
 import rs.ac.bg.etf.pp1.ast.MethodDecl;
 import rs.ac.bg.etf.pp1.ast.MethodTypeName;
 import rs.ac.bg.etf.pp1.ast.PrintStmt;
-import rs.ac.bg.etf.pp1.ast.ProcCall;
+//import rs.ac.bg.etf.pp1.ast.ProcCall;
 import rs.ac.bg.etf.pp1.ast.ProgName;
 import rs.ac.bg.etf.pp1.ast.Program;
-import rs.ac.bg.etf.pp1.ast.ReturnExpr;
+//import rs.ac.bg.etf.pp1.ast.ReturnExpr;
 import rs.ac.bg.etf.pp1.ast.SyntaxNode;
 import rs.ac.bg.etf.pp1.ast.Term;
 import rs.ac.bg.etf.pp1.ast.TermExpr;
@@ -34,6 +34,8 @@ public class SemanticPass extends VisitorAdaptor {
 
 	Logger log = Logger.getLogger(getClass());
 
+	
+	/*
 	public void report_error(String message, SyntaxNode info) {
 		errorDetected = true;
 		StringBuilder msg = new StringBuilder(message);
@@ -178,7 +180,7 @@ public class SemanticPass extends VisitorAdaptor {
 			report_error("Greska na liniji " + designator.getLine()+ " : ime "+designator.getName()+" nije deklarisano! ", null);
 		}
 		designator.obj = obj;
-	}
+	}*/
 	
 	public boolean passed() {
 		return !errorDetected;

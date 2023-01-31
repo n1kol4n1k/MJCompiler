@@ -1,12 +1,13 @@
 // generated with ast extension for cup
 // version 0.8
-// 31/0/2023 0:0:49
+// 31/0/2023 19:4:4
 
 
-package src.rs.ac.bg.etf.pp1.ast;
+package rs.ac.bg.etf.pp1.ast;
 
 public interface Visitor { 
 
+    public void visit(VarDeclInnerList VarDeclInnerList);
     public void visit(VarIdent VarIdent);
     public void visit(Relop Relop);
     public void visit(ExprInner ExprInner);
@@ -19,6 +20,7 @@ public interface Visitor {
     public void visit(ConstDeclList ConstDeclList);
     public void visit(ActualParamList ActualParamList);
     public void visit(GlobalDeclList GlobalDeclList);
+    public void visit(VarDeclList VarDeclList);
     public void visit(FormalParamList FormalParamList);
     public void visit(Expr Expr);
     public void visit(DesignatorList DesignatorList);
@@ -69,7 +71,7 @@ public interface Visitor {
     public void visit(MultiDesignator MultiDesignator);
     public void visit(SingleDesignator SingleDesignator);
     public void visit(Designator Designator);
-    public void visit(FuncCall FuncCall);
+    public void visit(StatementFuncCall StatementFuncCall);
     public void visit(MultiAssignment MultiAssignment);
     public void visit(Decrement Decrement);
     public void visit(Increment Increment);
@@ -103,11 +105,11 @@ public interface Visitor {
     public void visit(Extends Extends);
     public void visit(ClassDecl ClassDecl);
     public void visit(NoVarDecl NoVarDecl);
-    public void visit(VarDeclList VarDeclList);
+    public void visit(VarDeclarations VarDeclarations);
     public void visit(VarArray VarArray);
     public void visit(VarSingle VarSingle);
     public void visit(SingleVarDecl SingleVarDecl);
-    public void visit(VarDeclInnerList VarDeclInnerList);
+    public void visit(VarDeclarationsInner VarDeclarationsInner);
     public void visit(VarDecl VarDecl);
     public void visit(CharConstIdentValue CharConstIdentValue);
     public void visit(BoolConstIdentValue BoolConstIdentValue);

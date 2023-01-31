@@ -1,12 +1,13 @@
 // generated with ast extension for cup
 // version 0.8
-// 31/0/2023 0:0:49
+// 31/0/2023 19:4:4
 
 
-package src.rs.ac.bg.etf.pp1.ast;
+package rs.ac.bg.etf.pp1.ast;
 
 public abstract class VisitorAdaptor implements Visitor { 
 
+    public void visit(VarDeclInnerList VarDeclInnerList) { }
     public void visit(VarIdent VarIdent) { }
     public void visit(Relop Relop) { }
     public void visit(ExprInner ExprInner) { }
@@ -19,6 +20,7 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(ConstDeclList ConstDeclList) { }
     public void visit(ActualParamList ActualParamList) { }
     public void visit(GlobalDeclList GlobalDeclList) { }
+    public void visit(VarDeclList VarDeclList) { }
     public void visit(FormalParamList FormalParamList) { }
     public void visit(Expr Expr) { }
     public void visit(DesignatorList DesignatorList) { }
@@ -69,7 +71,7 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(MultiDesignator MultiDesignator) { visit(); }
     public void visit(SingleDesignator SingleDesignator) { visit(); }
     public void visit(Designator Designator) { visit(); }
-    public void visit(FuncCall FuncCall) { visit(); }
+    public void visit(StatementFuncCall StatementFuncCall) { visit(); }
     public void visit(MultiAssignment MultiAssignment) { visit(); }
     public void visit(Decrement Decrement) { visit(); }
     public void visit(Increment Increment) { visit(); }
@@ -103,11 +105,11 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(Extends Extends) { visit(); }
     public void visit(ClassDecl ClassDecl) { visit(); }
     public void visit(NoVarDecl NoVarDecl) { visit(); }
-    public void visit(VarDeclList VarDeclList) { visit(); }
+    public void visit(VarDeclarations VarDeclarations) { visit(); }
     public void visit(VarArray VarArray) { visit(); }
     public void visit(VarSingle VarSingle) { visit(); }
     public void visit(SingleVarDecl SingleVarDecl) { visit(); }
-    public void visit(VarDeclInnerList VarDeclInnerList) { visit(); }
+    public void visit(VarDeclarationsInner VarDeclarationsInner) { visit(); }
     public void visit(VarDecl VarDecl) { visit(); }
     public void visit(CharConstIdentValue CharConstIdentValue) { visit(); }
     public void visit(BoolConstIdentValue BoolConstIdentValue) { visit(); }

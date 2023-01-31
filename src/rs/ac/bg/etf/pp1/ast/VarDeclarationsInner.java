@@ -5,26 +5,16 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class VarDecl implements SyntaxNode {
+public class VarDeclarationsInner extends VarDeclInnerList {
 
-    private SyntaxNode parent;
-    private int line;
-    private Type Type;
     private VarDeclInnerList VarDeclInnerList;
+    private VarIdent VarIdent;
 
-    public VarDecl (Type Type, VarDeclInnerList VarDeclInnerList) {
-        this.Type=Type;
-        if(Type!=null) Type.setParent(this);
+    public VarDeclarationsInner (VarDeclInnerList VarDeclInnerList, VarIdent VarIdent) {
         this.VarDeclInnerList=VarDeclInnerList;
         if(VarDeclInnerList!=null) VarDeclInnerList.setParent(this);
-    }
-
-    public Type getType() {
-        return Type;
-    }
-
-    public void setType(Type Type) {
-        this.Type=Type;
+        this.VarIdent=VarIdent;
+        if(VarIdent!=null) VarIdent.setParent(this);
     }
 
     public VarDeclInnerList getVarDeclInnerList() {
@@ -35,20 +25,12 @@ public class VarDecl implements SyntaxNode {
         this.VarDeclInnerList=VarDeclInnerList;
     }
 
-    public SyntaxNode getParent() {
-        return parent;
+    public VarIdent getVarIdent() {
+        return VarIdent;
     }
 
-    public void setParent(SyntaxNode parent) {
-        this.parent=parent;
-    }
-
-    public int getLine() {
-        return line;
-    }
-
-    public void setLine(int line) {
-        this.line=line;
+    public void setVarIdent(VarIdent VarIdent) {
+        this.VarIdent=VarIdent;
     }
 
     public void accept(Visitor visitor) {
@@ -56,32 +38,26 @@ public class VarDecl implements SyntaxNode {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(Type!=null) Type.accept(visitor);
         if(VarDeclInnerList!=null) VarDeclInnerList.accept(visitor);
+        if(VarIdent!=null) VarIdent.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(Type!=null) Type.traverseTopDown(visitor);
         if(VarDeclInnerList!=null) VarDeclInnerList.traverseTopDown(visitor);
+        if(VarIdent!=null) VarIdent.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(Type!=null) Type.traverseBottomUp(visitor);
         if(VarDeclInnerList!=null) VarDeclInnerList.traverseBottomUp(visitor);
+        if(VarIdent!=null) VarIdent.traverseBottomUp(visitor);
         accept(visitor);
     }
 
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("VarDecl(\n");
-
-        if(Type!=null)
-            buffer.append(Type.toString("  "+tab));
-        else
-            buffer.append(tab+"  null");
-        buffer.append("\n");
+        buffer.append("VarDeclarationsInner(\n");
 
         if(VarDeclInnerList!=null)
             buffer.append(VarDeclInnerList.toString("  "+tab));
@@ -89,8 +65,14 @@ public class VarDecl implements SyntaxNode {
             buffer.append(tab+"  null");
         buffer.append("\n");
 
+        if(VarIdent!=null)
+            buffer.append(VarIdent.toString("  "+tab));
+        else
+            buffer.append(tab+"  null");
+        buffer.append("\n");
+
         buffer.append(tab);
-        buffer.append(") [VarDecl]");
+        buffer.append(") [VarDeclarationsInner]");
         return buffer.toString();
     }
 }

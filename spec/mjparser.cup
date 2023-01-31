@@ -54,7 +54,7 @@ scan with {:
 :}
 
 //Keywords
-terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, /*VOID,*/ EXTENDS, CONTINUE, /*FOREACH*/;
+terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH;
 
 //Special Characters
 terminal LBRACE, RBRACE, SEMI, LPAREN, RPAREN, LSQUAREBR, RSQUAREBR;
@@ -129,7 +129,7 @@ ConstIdentValue ::= (IntConstIdentValue) IDENT:cName EQUAL NUMBER:numValue
 VarDecl ::= (VarDecl) Type:varType VarDeclInnerList SEMI
 				;
 				
-VarDeclInnerList ::= (VarDeclInnerList) VarDeclInnerList COMMA VarIdent
+VarDeclInnerList ::= (VarDeclarationsInner) VarDeclInnerList COMMA VarIdent
 				| (SingleVarDecl) VarIdent
 				;
 				
@@ -137,7 +137,7 @@ VarIdent ::= (VarSingle) IDENT:vName
 				| (VarArray) IDENT:vName LSQUAREBR RSQUAREBR
 				;
 
-VarDeclList ::= (VarDeclList) VarDeclList VarDecl
+VarDeclList ::= (VarDeclarations) VarDeclList VarDecl
 				| (NoVarDecl) /*epsilon*/
 				;
 				
@@ -207,7 +207,7 @@ DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e
 				| (Increment) Designator:dest DBLPLUS
 				| (Decrement) Designator:dest DBLMINUS
 				| (MultiAssignment) LSQUAREBR DesignatorList RSQUAREBR EQUAL Designator
-				| (FuncCall) Designator:dest LPAREN ActualPars RPAREN
+				| (StatementFuncCall) Designator:dest LPAREN ActualPars RPAREN
 				;
 
 Designator ::= (Designator) IDENT:name
