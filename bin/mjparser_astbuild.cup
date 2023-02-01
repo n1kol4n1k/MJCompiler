@@ -54,7 +54,7 @@ scan with {:
 :}
 
 //Keywords
-terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, /*VOID,*/ EXTENDS, CONTINUE /*FOREACH*/;
+terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH;
 
 //Special Characters
 terminal LBRACE, RBRACE, SEMI, LPAREN, RPAREN, LSQUAREBR, RSQUAREBR;
@@ -147,7 +147,7 @@ ConstIdentValue ::= (IntConstIdentValue) IDENT:cName EQUAL NUMBER:numValue {: RE
 VarDecl ::= (VarDecl) Type:varType VarDeclInnerList:V1 SEMI {: RESULT=new VarDecl(varType, V1); RESULT.setLine(varTypeleft); :}
 				;
 				
-VarDeclInnerList ::= (VarDeclInnerList) VarDeclInnerList:V1 COMMA VarIdent:V2 {: RESULT=new VarDeclInnerList(V1, V2); RESULT.setLine(V1left); :}
+VarDeclInnerList ::= (VarDeclarationsInner) VarDeclInnerList:V1 COMMA VarIdent:V2 {: RESULT=new VarDeclarationsInner(V1, V2); RESULT.setLine(V1left); :}
 				| (SingleVarDecl) VarIdent:V1 {: RESULT=new SingleVarDecl(V1); RESULT.setLine(V1left); :}
 				;
 				
@@ -155,7 +155,7 @@ VarIdent ::= (VarSingle) IDENT:vName {: RESULT=new VarSingle(vName); RESULT.setL
 				| (VarArray) IDENT:vName LSQUAREBR RSQUAREBR {: RESULT=new VarArray(vName); RESULT.setLine(vNameleft); :}
 				;
 
-VarDeclList ::= (VarDeclList) VarDeclList:V1 VarDecl:V2 {: RESULT=new VarDeclList(V1, V2); RESULT.setLine(V1left); :}
+VarDeclList ::= (VarDeclarations) VarDeclList:V1 VarDecl:V2 {: RESULT=new VarDeclarations(V1, V2); RESULT.setLine(V1left); :}
 				| (NoVarDecl) {: RESULT=new NoVarDecl(); :} /*epsilon*/
 				;
 				
@@ -225,7 +225,7 @@ DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e {: RESULT=new 
 				| (Increment) Designator:dest DBLPLUS {: RESULT=new Increment(dest); RESULT.setLine(destleft); :}
 				| (Decrement) Designator:dest DBLMINUS {: RESULT=new Decrement(dest); RESULT.setLine(destleft); :}
 				| (MultiAssignment) LSQUAREBR DesignatorList:D1 RSQUAREBR EQUAL Designator:D2 {: RESULT=new MultiAssignment(D1, D2); RESULT.setLine(D1left); :}
-				| (FuncCall) Designator:dest LPAREN ActualPars:A1 RPAREN {: RESULT=new FuncCall(dest, A1); RESULT.setLine(destleft); :}
+				| (StatementFuncCall) Designator:dest LPAREN ActualPars:A1 RPAREN {: RESULT=new StatementFuncCall(dest, A1); RESULT.setLine(destleft); :}
 				;
 
 Designator ::= (Designator) IDENT:name {: RESULT=new Designator(name); RESULT.setLine(nameleft); :}

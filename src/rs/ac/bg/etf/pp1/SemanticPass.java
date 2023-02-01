@@ -1,4 +1,6 @@
 package rs.ac.bg.etf.pp1;
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 import rs.ac.bg.etf.pp1.ast.AddExpr;
@@ -18,57 +20,98 @@ import rs.ac.bg.etf.pp1.ast.Term;
 import rs.ac.bg.etf.pp1.ast.TermExpr;
 import rs.ac.bg.etf.pp1.ast.Type;
 import rs.ac.bg.etf.pp1.ast.Var;
+import rs.ac.bg.etf.pp1.ast.VarArray;
 import rs.ac.bg.etf.pp1.ast.VarDecl;
+import rs.ac.bg.etf.pp1.ast.VarIdent;
+import rs.ac.bg.etf.pp1.ast.VarSingle;
 import rs.ac.bg.etf.pp1.ast.VisitorAdaptor;
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.Obj;
 import rs.etf.pp1.symboltable.concepts.Struct;
 
 public class SemanticPass extends VisitorAdaptor {
+	
+	//Helper structures
+	class VarInfo
+	{
+		public String m_Name;
+		public boolean m_IsArray;
+		public boolean m_IsField;
+		public VarInfo(String name, boolean isArray, boolean isField) { m_Name=name; m_IsArray = isArray; m_IsField = isField;}
+	}
 
 	boolean errorDetected = false;
 	int printCallCount = 0;
 	Obj currentMethod = null;
 	boolean returnFound = false;
+	//to be written in obj file header
 	int nVars;
 
 	Logger log = Logger.getLogger(getClass());
 
+	//Lists
+	ArrayList<VarInfo> innerVarList = new ArrayList<VarInfo>();
 	
-	/*
-	public void report_error(String message, SyntaxNode info) {
-		errorDetected = true;
-		StringBuilder msg = new StringBuilder(message);
-		int line = (info == null) ? 0: info.getLine();
-		if (line != 0)
-			msg.append (" na liniji ").append(line);
-		log.error(msg.toString());
-	}
-
-	public void report_info(String message, SyntaxNode info) {
-		StringBuilder msg = new StringBuilder(message); 
-		int line = (info == null) ? 0: info.getLine();
-		if (line != 0)
-			msg.append (" na liniji ").append(line);
-		log.info(msg.toString());
+	
+	//TODO: init, symbol table, bool missing?
+	public void Initialize()
+	{
+		Tab.init();
+		//TODO: insert bool type into symbol table
 	}
 	
-	public void visit(Program program) {		
+	//Entering program
+	public void visit(ProgName progName) 
+	{
+		progName.obj = Tab.insert(Obj.Prog, progName.getPName(), Tab.noType);
+		Tab.openScope();     	
+	}
+	
+	//Exiting program
+	public void visit(Program program) 
+	{		
 		nVars = Tab.currentScope.getnVars();
 		Tab.chainLocalSymbols(program.getProgName().obj);
 		Tab.closeScope();
 	}
 
-	public void visit(ProgName progName) {
-		progName.obj = Tab.insert(Obj.Prog, progName.getPName(), Tab.noType);
-		Tab.openScope();     	
-	}
-
+	//Declaration of Variable(s)
 	public void visit(VarDecl varDecl) {
-		report_info("Deklarisana promenljiva "+ varDecl.getVarName(), varDecl);
-		Obj varNode = Tab.insert(Obj.Var, varDecl.getVarName(), varDecl.getType().struct);
+		if(varDecl.getType().struct == Tab.noType)
+		{
+			report_error("Greska: tip deklarisane promenljive ne postoji", null);
+			return;
+		}
+		for(VarInfo varInfo : innerVarList)
+		{
+			report_info("Deklarisana promenljiva "+ varInfo.m_Name, varDecl);
+			if(varInfo.m_IsArray == true)
+			{
+				//TODO: List of new types - classes and arrays, to prevent multiple instances of same type
+				Tab.insert(Obj.Var, varInfo.m_Name, new Struct(Struct.Array, varDecl.getType().struct));
+			}
+			else
+			{
+				Tab.insert(Obj.Var, varInfo.m_Name, varDecl.getType().struct);
+			}
+			//TODO: Is class field?
+			//TODO: Declaring an existing variable?
+		}
+		innerVarList.clear();
 	}
-
+	
+	public void visit(VarSingle varSingle)
+	{
+		//TODO: fields!
+		AddVarInfo(varSingle.getVName(), false, false);
+	}
+	
+	public void visit(VarArray varArray)
+	{
+		//TODO: fields!
+		AddVarInfo(varArray.getVName(), true, false);
+	}
+	
 	public void visit(Type type) {
 		Obj typeNode = Tab.find(type.getTypeName());
 		if (typeNode == Tab.noObj) {
@@ -85,7 +128,7 @@ public class SemanticPass extends VisitorAdaptor {
 			}
 		}  
 	}
-
+/*
 	public void visit(MethodDecl methodDecl) {
 		if (!returnFound && currentMethod.getType() != Tab.noType) {
 			report_error("Semanticka greska na liniji " + methodDecl.getLine() + ": funcija " + currentMethod.getName() + " nema return iskaz!", null);
@@ -110,11 +153,8 @@ public class SemanticPass extends VisitorAdaptor {
 			report_error("Greska na liniji " + assignment.getLine() + " : " + " nekompatibilni tipovi u dodeli vrednosti ", null);
 	}
 
-	public void visit(PrintStmt printStmt){
-		printCallCount++;    	
-	}
-
-	public void visit(ReturnExpr returnExpr){
+*/
+	/*public void visit(ReturnExpr returnExpr){
 		returnFound = true;
 		Struct currMethType = currentMethod.getType();
 		if (!currMethType.compatibleWith(returnExpr.getExpr().struct)) {
@@ -186,5 +226,28 @@ public class SemanticPass extends VisitorAdaptor {
 		return !errorDetected;
 	}
 	
+	//Helpers
+	private void AddVarInfo(String name, boolean isArray, boolean isField)
+	{
+		innerVarList.add(new VarInfo(name, isArray, isField));
+	}
+	
+	//Reports
+	public void report_error(String message, SyntaxNode info) {
+		errorDetected = true;
+		StringBuilder msg = new StringBuilder(message);
+		int line = (info == null) ? 0: info.getLine();
+		if (line != 0)
+			msg.append (" na liniji ").append(line);
+		log.error(msg.toString());
+	}
+
+	public void report_info(String message, SyntaxNode info) {
+		StringBuilder msg = new StringBuilder(message); 
+		int line = (info == null) ? 0: info.getLine();
+		if (line != 0)
+			msg.append (" na liniji ").append(line);
+		log.info(msg.toString());
+	}
 }
 

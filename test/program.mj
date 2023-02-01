@@ -7,7 +7,9 @@ program MJProgram
 		return c+2;
 	}
 	
-	int main() {
+	int main()
+	char n, m, o;
+	{
 		y = 2;
 		x = y + 2;
 		y = k() + 3;

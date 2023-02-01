@@ -144,7 +144,7 @@ ConstIdentValue ::= (IntConstIdentValue) IDENT:cName EQUAL NUMBER:numValue {: RE
 				| (CharConstIdentValue) IDENT:cName EQUAL CHAR:charValue {: RESULT=new CharConstIdentValue(cName, charValue); RESULT.setLine(cNameleft); :}
 				;
 				
-VarDecl ::= (VarDecl) Type:varType VarDeclInnerList:V1 SEMI {: RESULT=new VarDecl(varType, V1); RESULT.setLine(varTypeleft); :}
+VarDecl ::= (VarDecl) Type:stvarType VarDeclInnerList:V1 SEMI {: RESULT=new VarDecl(stvarType, V1); RESULT.setLine(stvarTypeleft); :}
 				;
 				
 VarDeclInnerList ::= (VarDeclarationsInner) VarDeclInnerList:V1 COMMA VarIdent:V2 {: RESULT=new VarDeclarationsInner(V1, V2); RESULT.setLine(V1left); :}

@@ -17,7 +17,7 @@
 			</fileset>
 		</delete>
 	</target>
-
+ <!-- TODO: Delete also ast generated nodes -->
 	<target name="lexerGen" depends="delete">
 		<java jar="lib/JFlex.jar" fork="true">
 			<arg value="-d"/>

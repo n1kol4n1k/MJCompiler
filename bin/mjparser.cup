@@ -126,7 +126,7 @@ ConstIdentValue ::= (IntConstIdentValue) IDENT:cName EQUAL NUMBER:numValue
 				| (CharConstIdentValue) IDENT:cName EQUAL CHAR:charValue
 				;
 				
-VarDecl ::= (VarDecl) Type:varType VarDeclInnerList SEMI
+VarDecl ::= (VarDecl) Type:stvarType VarDeclInnerList SEMI
 				;
 				
 VarDeclInnerList ::= (VarDeclarationsInner) VarDeclInnerList COMMA VarIdent
