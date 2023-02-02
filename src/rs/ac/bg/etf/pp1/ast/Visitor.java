@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 31/0/2023 23:26:14
+// 2/1/2023 1:5:6
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -12,12 +12,13 @@ public interface Visitor {
     public void visit(Relop Relop);
     public void visit(ExprInner ExprInner);
     public void visit(StatementList StatementList);
+    public void visit(ClassName ClassName);
     public void visit(Factor Factor);
     public void visit(CondTerm CondTerm);
     public void visit(Inheritance Inheritance);
+    public void visit(ConstDeclInnerList ConstDeclInnerList);
     public void visit(Term Term);
     public void visit(Condition Condition);
-    public void visit(ConstDeclList ConstDeclList);
     public void visit(ActualParamList ActualParamList);
     public void visit(GlobalDeclList GlobalDeclList);
     public void visit(VarDeclList VarDeclList);
@@ -30,8 +31,8 @@ public interface Visitor {
     public void visit(ConditionStatements ConditionStatements);
     public void visit(CondFact CondFact);
     public void visit(MethodDeclList MethodDeclList);
-    public void visit(GlobalDecl GlobalDecl);
     public void visit(FormPars FormPars);
+    public void visit(GlobalDecl GlobalDecl);
     public void visit(ConstIdentValue ConstIdentValue);
     public void visit(Percop Percop);
     public void visit(Divop Divop);
@@ -103,6 +104,7 @@ public interface Visitor {
     public void visit(MethodDeclarations MethodDeclarations);
     public void visit(InheritanceDerived1 InheritanceDerived1);
     public void visit(Extends Extends);
+    public void visit(ClassDeclEnter ClassDeclEnter);
     public void visit(ClassDecl ClassDecl);
     public void visit(NoVarDecl NoVarDecl);
     public void visit(VarDeclarations VarDeclarations);
@@ -116,8 +118,9 @@ public interface Visitor {
     public void visit(IntConstIdentValue IntConstIdentValue);
     public void visit(SingleConstDecl SingleConstDecl);
     public void visit(ConstDecls ConstDecls);
-    public void visit(Type Type);
+    public void visit(ConstType ConstType);
     public void visit(ConstDecl ConstDecl);
+    public void visit(Type Type);
     public void visit(GlobalClassDeclaration GlobalClassDeclaration);
     public void visit(GlobalVarDeclaration GlobalVarDeclaration);
     public void visit(GlobalConstDeclaration GlobalConstDeclaration);

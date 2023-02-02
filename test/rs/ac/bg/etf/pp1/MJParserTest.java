@@ -44,9 +44,9 @@ public class MJParserTest {
 	        
 			Tab.init(); // Universe scope
 			SemanticPass semanticCheck = new SemanticPass();
+			semanticCheck.ExpandSymTable();
 			prog.traverseBottomUp(semanticCheck);
 			
-	        log.info("Print calls = " + semanticCheck.printCallCount);
 	        Tab.dump();
 	        
 	        if (!p.errorDetected && semanticCheck.passed()) {

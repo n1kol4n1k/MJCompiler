@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 31/0/2023 23:26:14
+// 2/1/2023 1:5:6
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -9,13 +9,14 @@ public class ClassDecl implements SyntaxNode {
 
     private SyntaxNode parent;
     private int line;
-    private String clNAME;
+    private ClassName ClassName;
     private Inheritance Inheritance;
     private VarDeclList VarDeclList;
     private MethodDeclList MethodDeclList;
 
-    public ClassDecl (String clNAME, Inheritance Inheritance, VarDeclList VarDeclList, MethodDeclList MethodDeclList) {
-        this.clNAME=clNAME;
+    public ClassDecl (ClassName ClassName, Inheritance Inheritance, VarDeclList VarDeclList, MethodDeclList MethodDeclList) {
+        this.ClassName=ClassName;
+        if(ClassName!=null) ClassName.setParent(this);
         this.Inheritance=Inheritance;
         if(Inheritance!=null) Inheritance.setParent(this);
         this.VarDeclList=VarDeclList;
@@ -24,12 +25,12 @@ public class ClassDecl implements SyntaxNode {
         if(MethodDeclList!=null) MethodDeclList.setParent(this);
     }
 
-    public String getClNAME() {
-        return clNAME;
+    public ClassName getClassName() {
+        return ClassName;
     }
 
-    public void setClNAME(String clNAME) {
-        this.clNAME=clNAME;
+    public void setClassName(ClassName ClassName) {
+        this.ClassName=ClassName;
     }
 
     public Inheritance getInheritance() {
@@ -77,6 +78,7 @@ public class ClassDecl implements SyntaxNode {
     }
 
     public void childrenAccept(Visitor visitor) {
+        if(ClassName!=null) ClassName.accept(visitor);
         if(Inheritance!=null) Inheritance.accept(visitor);
         if(VarDeclList!=null) VarDeclList.accept(visitor);
         if(MethodDeclList!=null) MethodDeclList.accept(visitor);
@@ -84,12 +86,14 @@ public class ClassDecl implements SyntaxNode {
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
+        if(ClassName!=null) ClassName.traverseTopDown(visitor);
         if(Inheritance!=null) Inheritance.traverseTopDown(visitor);
         if(VarDeclList!=null) VarDeclList.traverseTopDown(visitor);
         if(MethodDeclList!=null) MethodDeclList.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
+        if(ClassName!=null) ClassName.traverseBottomUp(visitor);
         if(Inheritance!=null) Inheritance.traverseBottomUp(visitor);
         if(VarDeclList!=null) VarDeclList.traverseBottomUp(visitor);
         if(MethodDeclList!=null) MethodDeclList.traverseBottomUp(visitor);
@@ -101,7 +105,10 @@ public class ClassDecl implements SyntaxNode {
         buffer.append(tab);
         buffer.append("ClassDecl(\n");
 
-        buffer.append(" "+tab+clNAME);
+        if(ClassName!=null)
+            buffer.append(ClassName.toString("  "+tab));
+        else
+            buffer.append(tab+"  null");
         buffer.append("\n");
 
         if(Inheritance!=null)

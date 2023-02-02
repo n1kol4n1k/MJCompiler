@@ -70,7 +70,7 @@ terminal Character CHAR;
 
 //TODO: organize categories better
 //Objects
-nonterminal rs.etf.pp1.symboltable.concepts.Obj Program, ProgName, Designator, MethodDecl, MethodTypeName;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Program, ProgName, Designator, MethodDecl, MethodTypeName, ClassName;
 nonterminal GlobalDecl GlobalDecl;
 nonterminal ConstDecl ConstDecl;
 nonterminal VarDecl VarDecl;
@@ -82,7 +82,7 @@ nonterminal FormalParamDecl FormalParamDecl;
 //Lists
 nonterminal GlobalDeclList GlobalDeclList;
 nonterminal MethodDeclList MethodDeclList;
-nonterminal ConstDeclList ConstDeclList;
+nonterminal ConstDeclInnerList ConstDeclInnerList;
 nonterminal VarDeclInnerList VarDeclInnerList;
 nonterminal VarDeclList VarDeclList;
 nonterminal StatementList StatementList;
@@ -92,7 +92,7 @@ nonterminal ActualParamList ActualParamList;
 nonterminal ExprInner ExprInner;
 
 //Types and calculations
-nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact, ConstType;
 
 //Operations
 nonterminal Relop Relop;
@@ -129,13 +129,16 @@ GlobalDecl ::= (GlobalConstDeclaration) ConstDecl:C1 {: RESULT=new GlobalConstDe
 				| (GlobalClassDeclaration) ClassDecl:C1 {: RESULT=new GlobalClassDeclaration(C1); RESULT.setLine(C1left); :}
 				;
 				
-ConstDecl ::= (ConstDecl) CONST Type:constType ConstDeclList:C1 SEMI {: RESULT=new ConstDecl(constType, C1); RESULT.setLine(constTypeleft); :}
+Type ::= (Type) IDENT:typeName {: RESULT=new Type(typeName); RESULT.setLine(typeNameleft); :} 
+				;
+
+ConstDecl ::= (ConstDecl) CONST ConstType:C1 ConstDeclInnerList:C2 SEMI {: RESULT=new ConstDecl(C1, C2); RESULT.setLine(C1left); :}
 				;
 				
-Type ::= (Type) IDENT:typeName {: RESULT=new Type(typeName); RESULT.setLine(typeNameleft); :} 
-;
+ConstType ::= (ConstType) Type:constType {: RESULT=new ConstType(constType); RESULT.setLine(constTypeleft); :}
+				;
 				
-ConstDeclList ::= (ConstDecls) ConstDeclList:C1 COMMA ConstIdentValue:C2 {: RESULT=new ConstDecls(C1, C2); RESULT.setLine(C1left); :}
+ConstDeclInnerList ::= (ConstDecls) ConstDeclInnerList:C1 COMMA ConstIdentValue:C2 {: RESULT=new ConstDecls(C1, C2); RESULT.setLine(C1left); :}
 				| (SingleConstDecl) ConstIdentValue:C1 {: RESULT=new SingleConstDecl(C1); RESULT.setLine(C1left); :}
 				;
 				
@@ -144,7 +147,7 @@ ConstIdentValue ::= (IntConstIdentValue) IDENT:cName EQUAL NUMBER:numValue {: RE
 				| (CharConstIdentValue) IDENT:cName EQUAL CHAR:charValue {: RESULT=new CharConstIdentValue(cName, charValue); RESULT.setLine(cNameleft); :}
 				;
 				
-VarDecl ::= (VarDecl) Type:stvarType VarDeclInnerList:V1 SEMI {: RESULT=new VarDecl(stvarType, V1); RESULT.setLine(stvarTypeleft); :}
+VarDecl ::= (VarDecl) Type:varType VarDeclInnerList:V1 SEMI {: RESULT=new VarDecl(varType, V1); RESULT.setLine(varTypeleft); :}
 				;
 				
 VarDeclInnerList ::= (VarDeclarationsInner) VarDeclInnerList:V1 COMMA VarIdent:V2 {: RESULT=new VarDeclarationsInner(V1, V2); RESULT.setLine(V1left); :}
@@ -159,8 +162,10 @@ VarDeclList ::= (VarDeclarations) VarDeclList:V1 VarDecl:V2 {: RESULT=new VarDec
 				| (NoVarDecl) {: RESULT=new NoVarDecl(); :} /*epsilon*/
 				;
 				
-ClassDecl ::= (ClassDecl) CLASS IDENT:clNAME Inheritance:I1 LBRACE VarDeclList:V2 RBRACE LBRACE MethodDeclList:M3 RBRACE {: RESULT=new ClassDecl(clNAME, I1, V2, M3); RESULT.setLine(clNAMEleft); :}
+ClassDecl ::= (ClassDecl) CLASS ClassName:cName Inheritance:I1 LBRACE VarDeclList:V2 RBRACE LBRACE MethodDeclList:M3 RBRACE {: RESULT=new ClassDecl(cName, I1, V2, M3); RESULT.setLine(cNameleft); :}
 				;
+
+ClassName ::= (ClassDeclEnter) IDENT:clName {: RESULT=new ClassDeclEnter(clName); RESULT.setLine(clNameleft); :};
 
 Inheritance ::= (Extends) EXTENDS Type:parent {: RESULT=new Extends(parent); RESULT.setLine(parentleft); :} 
 				| {: RESULT=new InheritanceDerived1(); :} /*epsilon*/

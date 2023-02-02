@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 31/0/2023 23:26:14
+// 2/1/2023 1:5:6
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -9,30 +9,30 @@ public class ConstDecl implements SyntaxNode {
 
     private SyntaxNode parent;
     private int line;
-    private Type Type;
-    private ConstDeclList ConstDeclList;
+    private ConstType ConstType;
+    private ConstDeclInnerList ConstDeclInnerList;
 
-    public ConstDecl (Type Type, ConstDeclList ConstDeclList) {
-        this.Type=Type;
-        if(Type!=null) Type.setParent(this);
-        this.ConstDeclList=ConstDeclList;
-        if(ConstDeclList!=null) ConstDeclList.setParent(this);
+    public ConstDecl (ConstType ConstType, ConstDeclInnerList ConstDeclInnerList) {
+        this.ConstType=ConstType;
+        if(ConstType!=null) ConstType.setParent(this);
+        this.ConstDeclInnerList=ConstDeclInnerList;
+        if(ConstDeclInnerList!=null) ConstDeclInnerList.setParent(this);
     }
 
-    public Type getType() {
-        return Type;
+    public ConstType getConstType() {
+        return ConstType;
     }
 
-    public void setType(Type Type) {
-        this.Type=Type;
+    public void setConstType(ConstType ConstType) {
+        this.ConstType=ConstType;
     }
 
-    public ConstDeclList getConstDeclList() {
-        return ConstDeclList;
+    public ConstDeclInnerList getConstDeclInnerList() {
+        return ConstDeclInnerList;
     }
 
-    public void setConstDeclList(ConstDeclList ConstDeclList) {
-        this.ConstDeclList=ConstDeclList;
+    public void setConstDeclInnerList(ConstDeclInnerList ConstDeclInnerList) {
+        this.ConstDeclInnerList=ConstDeclInnerList;
     }
 
     public SyntaxNode getParent() {
@@ -56,19 +56,19 @@ public class ConstDecl implements SyntaxNode {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(Type!=null) Type.accept(visitor);
-        if(ConstDeclList!=null) ConstDeclList.accept(visitor);
+        if(ConstType!=null) ConstType.accept(visitor);
+        if(ConstDeclInnerList!=null) ConstDeclInnerList.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(Type!=null) Type.traverseTopDown(visitor);
-        if(ConstDeclList!=null) ConstDeclList.traverseTopDown(visitor);
+        if(ConstType!=null) ConstType.traverseTopDown(visitor);
+        if(ConstDeclInnerList!=null) ConstDeclInnerList.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(Type!=null) Type.traverseBottomUp(visitor);
-        if(ConstDeclList!=null) ConstDeclList.traverseBottomUp(visitor);
+        if(ConstType!=null) ConstType.traverseBottomUp(visitor);
+        if(ConstDeclInnerList!=null) ConstDeclInnerList.traverseBottomUp(visitor);
         accept(visitor);
     }
 
@@ -77,14 +77,14 @@ public class ConstDecl implements SyntaxNode {
         buffer.append(tab);
         buffer.append("ConstDecl(\n");
 
-        if(Type!=null)
-            buffer.append(Type.toString("  "+tab));
+        if(ConstType!=null)
+            buffer.append(ConstType.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");
 
-        if(ConstDeclList!=null)
-            buffer.append(ConstDeclList.toString("  "+tab));
+        if(ConstDeclInnerList!=null)
+            buffer.append(ConstDeclInnerList.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");

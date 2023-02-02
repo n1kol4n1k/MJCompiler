@@ -5,15 +5,23 @@ import org.apache.log4j.Logger;
 
 import rs.ac.bg.etf.pp1.ast.AddExpr;
 import rs.ac.bg.etf.pp1.ast.Assignment;
+import rs.ac.bg.etf.pp1.ast.BoolConstIdentValue;
+import rs.ac.bg.etf.pp1.ast.CharConstIdentValue;
+import rs.ac.bg.etf.pp1.ast.ClassDecl;
+import rs.ac.bg.etf.pp1.ast.ClassDeclEnter;
+import rs.ac.bg.etf.pp1.ast.ConstDecl;
+import rs.ac.bg.etf.pp1.ast.ConstType;
 //import rs.ac.bg.etf.pp1.ast.Const;
 import rs.ac.bg.etf.pp1.ast.Designator;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
+import rs.ac.bg.etf.pp1.ast.IntConstIdentValue;
 import rs.ac.bg.etf.pp1.ast.MethodDecl;
 import rs.ac.bg.etf.pp1.ast.MethodTypeName;
 import rs.ac.bg.etf.pp1.ast.PrintStmt;
 //import rs.ac.bg.etf.pp1.ast.ProcCall;
 import rs.ac.bg.etf.pp1.ast.ProgName;
 import rs.ac.bg.etf.pp1.ast.Program;
+import rs.ac.bg.etf.pp1.ast.ReturnStmt;
 //import rs.ac.bg.etf.pp1.ast.ReturnExpr;
 import rs.ac.bg.etf.pp1.ast.SyntaxNode;
 import rs.ac.bg.etf.pp1.ast.Term;
@@ -31,33 +39,33 @@ import rs.etf.pp1.symboltable.concepts.Struct;
 
 public class SemanticPass extends VisitorAdaptor {
 	
+	//Symbol Table Expansion
+	Struct boolType = new Struct(Struct.Bool);
+	
 	//Helper structures
 	class VarInfo
 	{
 		public String m_Name;
 		public boolean m_IsArray;
-		public boolean m_IsField;
-		public VarInfo(String name, boolean isArray, boolean isField) { m_Name=name; m_IsArray = isArray; m_IsField = isField;}
+		public VarInfo(String name, boolean isArray) { m_Name=name; m_IsArray = isArray;}
 	}
 
 	boolean errorDetected = false;
-	int printCallCount = 0;
-	Obj currentMethod = null;
-	boolean returnFound = false;
+	Obj m_currentMethod = null;
+	boolean m_returnFound = false;
 	//to be written in obj file header
 	int nVars;
+	Struct m_CurrentConstType = null;
 
 	Logger log = Logger.getLogger(getClass());
 
 	//Lists
 	ArrayList<VarInfo> innerVarList = new ArrayList<VarInfo>();
 	
-	
-	//TODO: init, symbol table, bool missing?
-	public void Initialize()
+	//Symbol Table expansion with bool standard type
+	public void ExpandSymTable()
 	{
-		Tab.init();
-		//TODO: insert bool type into symbol table
+		Tab.insert(Obj.Type, "bool", boolType);
 	}
 	
 	//Entering program
@@ -87,14 +95,13 @@ public class SemanticPass extends VisitorAdaptor {
 			report_info("Deklarisana promenljiva "+ varInfo.m_Name, varDecl);
 			if(varInfo.m_IsArray == true)
 			{
-				//TODO: List of new types - classes and arrays, to prevent multiple instances of same type
+				//TODO: List of new types arrays, to prevent multiple instances of same type
 				Tab.insert(Obj.Var, varInfo.m_Name, new Struct(Struct.Array, varDecl.getType().struct));
 			}
 			else
 			{
 				Tab.insert(Obj.Var, varInfo.m_Name, varDecl.getType().struct);
 			}
-			//TODO: Is class field?
 			//TODO: Declaring an existing variable?
 		}
 		innerVarList.clear();
@@ -102,16 +109,15 @@ public class SemanticPass extends VisitorAdaptor {
 	
 	public void visit(VarSingle varSingle)
 	{
-		//TODO: fields!
-		AddVarInfo(varSingle.getVName(), false, false);
+		AddVarInfo(varSingle.getVName(), false);
 	}
 	
 	public void visit(VarArray varArray)
 	{
-		//TODO: fields!
-		AddVarInfo(varArray.getVName(), true, false);
+		AddVarInfo(varArray.getVName(), true);
 	}
 	
+	//Type visit
 	public void visit(Type type) {
 		Obj typeNode = Tab.find(type.getTypeName());
 		if (typeNode == Tab.noObj) {
@@ -128,26 +134,86 @@ public class SemanticPass extends VisitorAdaptor {
 			}
 		}  
 	}
-/*
-	public void visit(MethodDecl methodDecl) {
-		if (!returnFound && currentMethod.getType() != Tab.noType) {
-			report_error("Semanticka greska na liniji " + methodDecl.getLine() + ": funcija " + currentMethod.getName() + " nema return iskaz!", null);
+	
+	//Const declarations 
+	public void visit(ConstType constType)
+	{
+		m_CurrentConstType = constType.getType().struct;
+	}
+	
+	public void visit(ConstDecl constDecl)
+	{
+		m_CurrentConstType = null;
+	}
+	
+	public void visit(IntConstIdentValue intConstIdentValue)
+	{
+		if(m_CurrentConstType == null || m_CurrentConstType != Tab.intType)
+		{
+			report_error("Greska: tip i vrednost konstante se slazu", intConstIdentValue);
+			return;
 		}
 		
-		Tab.chainLocalSymbols(currentMethod);
-		Tab.closeScope();
-		
-		returnFound = false;
-		currentMethod = null;
+		Obj newConst = Tab.insert(Obj.Con, intConstIdentValue.getCName(), Tab.intType);
+		newConst.setAdr(intConstIdentValue.getNumValue());
 	}
+	
+	public void visit(BoolConstIdentValue boolConstIdentValue)
+	{
+		if(m_CurrentConstType == null || m_CurrentConstType != boolType)
+		{
+			report_error("Greska: tip i vrednost konstante se slazu", boolConstIdentValue);
+			return;
+		}
 
+		Obj newConst = Tab.insert(Obj.Con, boolConstIdentValue.getCName(), boolType);
+		newConst.setAdr(boolConstIdentValue.getBoolValue() ? 1 : 0);
+	}
+	
+	public void visit(CharConstIdentValue charConstIdentValue)
+	{
+		if(m_CurrentConstType == null || m_CurrentConstType != Tab.charType)
+		{
+			report_error("Greska: tip i vrednost konstante se slazu", charConstIdentValue);
+			return;
+		}
+
+		Obj newConst = Tab.insert(Obj.Con, charConstIdentValue.getCName(), Tab.charType);
+		newConst.setAdr(charConstIdentValue.getCharValue());
+	}
+	
+	//Methods
+	//Enter method declaration
 	public void visit(MethodTypeName methodTypeName) {
-		currentMethod = Tab.insert(Obj.Meth, methodTypeName.getMethName(), methodTypeName.getType().struct);
-		methodTypeName.obj = currentMethod;
+		m_currentMethod = Tab.insert(Obj.Meth, methodTypeName.getMethName(), methodTypeName.getType().struct);
+		methodTypeName.obj = m_currentMethod;
 		Tab.openScope();
 		report_info("Obradjuje se funkcija " + methodTypeName.getMethName(), methodTypeName);
 	}
 
+	//Exit method declaration
+	public void visit(MethodDecl methodDecl) {
+		if (!m_returnFound && m_currentMethod.getType() != Tab.noType) {
+			report_error("Semanticka greska na liniji " + methodDecl.getLine() + ": funcija " + m_currentMethod.getName() + " nema return iskaz!", null);
+		}
+		
+		Tab.chainLocalSymbols(m_currentMethod);
+		Tab.closeScope();
+		
+		m_returnFound = false;
+		m_currentMethod = null;
+		
+		//TODO: return is of different type than curr method return type
+	}
+	
+	public void visit(ReturnStmt returnStmt)
+	{
+		m_returnFound = true;
+	}
+/*
+	
+
+	
 	public void visit(Assignment assignment) {
 		if (!assignment.getExpr().struct.assignableTo(assignment.getDesignator().obj.getType()))
 			report_error("Greska na liniji " + assignment.getLine() + " : " + " nekompatibilni tipovi u dodeli vrednosti ", null);
@@ -227,9 +293,9 @@ public class SemanticPass extends VisitorAdaptor {
 	}
 	
 	//Helpers
-	private void AddVarInfo(String name, boolean isArray, boolean isField)
+	private void AddVarInfo(String name, boolean isArray)
 	{
-		innerVarList.add(new VarInfo(name, isArray, isField));
+		innerVarList.add(new VarInfo(name, isArray));
 	}
 	
 	//Reports

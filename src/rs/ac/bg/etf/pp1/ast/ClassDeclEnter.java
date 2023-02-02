@@ -5,27 +5,20 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class Mulop implements SyntaxNode {
+public class ClassDeclEnter extends ClassName {
 
-    private SyntaxNode parent;
-    private int line;
-    public Mulop () {
+    private String clName;
+
+    public ClassDeclEnter (String clName) {
+        this.clName=clName;
     }
 
-    public SyntaxNode getParent() {
-        return parent;
+    public String getClName() {
+        return clName;
     }
 
-    public void setParent(SyntaxNode parent) {
-        this.parent=parent;
-    }
-
-    public int getLine() {
-        return line;
-    }
-
-    public void setLine(int line) {
-        this.line=line;
+    public void setClName(String clName) {
+        this.clName=clName;
     }
 
     public void accept(Visitor visitor) {
@@ -46,10 +39,13 @@ public class Mulop implements SyntaxNode {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("Mulop(\n");
+        buffer.append("ClassDeclEnter(\n");
+
+        buffer.append(" "+tab+clName);
+        buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [Mulop]");
+        buffer.append(") [ClassDeclEnter]");
         return buffer.toString();
     }
 }

@@ -70,17 +70,17 @@ terminal Character CHAR;
 
 //TODO: organize categories better
 //Objects
-nonterminal rs.etf.pp1.symboltable.concepts.Obj Program, ProgName, Designator, MethodDecl, MethodTypeName;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Program, ProgName, Designator, MethodDecl, MethodTypeName, ClassName;
 nonterminal GlobalDecl, ConstDecl, VarDecl, ClassDecl, VarIdent, FormalParamDecl;
 
 
 //Lists
-nonterminal GlobalDeclList, MethodDeclList, ConstDeclList, VarDeclInnerList, VarDeclList;
+nonterminal GlobalDeclList, MethodDeclList, ConstDeclInnerList, VarDeclInnerList, VarDeclList;
 nonterminal StatementList, FormalParamList, DesignatorList, ActualParamList;
 nonterminal ExprInner;
 
 //Types and calculations
-nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact, ConstType;
 
 //Operations
 nonterminal Relop, Addop, Mulop;
@@ -111,13 +111,16 @@ GlobalDecl ::= (GlobalConstDeclaration) ConstDecl
 				| (GlobalClassDeclaration) ClassDecl
 				;
 				
-ConstDecl ::= (ConstDecl) CONST Type:constType ConstDeclList SEMI
+Type ::= (Type) IDENT:typeName 
+				;
+
+ConstDecl ::= (ConstDecl) CONST ConstType ConstDeclInnerList SEMI
 				;
 				
-Type ::= (Type) IDENT:typeName 
-;
+ConstType ::= (ConstType) Type:constType
+				;
 				
-ConstDeclList ::= (ConstDecls) ConstDeclList COMMA ConstIdentValue
+ConstDeclInnerList ::= (ConstDecls) ConstDeclInnerList COMMA ConstIdentValue
 				| (SingleConstDecl) ConstIdentValue
 				;
 				
@@ -126,7 +129,7 @@ ConstIdentValue ::= (IntConstIdentValue) IDENT:cName EQUAL NUMBER:numValue
 				| (CharConstIdentValue) IDENT:cName EQUAL CHAR:charValue
 				;
 				
-VarDecl ::= (VarDecl) Type:stvarType VarDeclInnerList SEMI
+VarDecl ::= (VarDecl) Type:varType VarDeclInnerList SEMI
 				;
 				
 VarDeclInnerList ::= (VarDeclarationsInner) VarDeclInnerList COMMA VarIdent
@@ -141,8 +144,10 @@ VarDeclList ::= (VarDeclarations) VarDeclList VarDecl
 				| (NoVarDecl) /*epsilon*/
 				;
 				
-ClassDecl ::= (ClassDecl) CLASS IDENT:clNAME Inheritance LBRACE VarDeclList RBRACE LBRACE MethodDeclList RBRACE
+ClassDecl ::= (ClassDecl) CLASS ClassName:cName Inheritance LBRACE VarDeclList RBRACE LBRACE MethodDeclList RBRACE
 				;
+
+ClassName ::= (ClassDeclEnter) IDENT:clName;
 
 Inheritance ::= (Extends) EXTENDS Type:parent 
 				| /*epsilon*/

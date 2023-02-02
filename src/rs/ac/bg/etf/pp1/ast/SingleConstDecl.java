@@ -1,11 +1,11 @@
 // generated with ast extension for cup
 // version 0.8
-// 31/0/2023 23:26:14
+// 2/1/2023 1:5:6
 
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class SingleConstDecl extends ConstDeclList {
+public class SingleConstDecl extends ConstDeclInnerList {
 
     private ConstIdentValue ConstIdentValue;
 

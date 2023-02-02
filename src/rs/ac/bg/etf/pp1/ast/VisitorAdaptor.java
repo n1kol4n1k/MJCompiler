@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 31/0/2023 23:26:14
+// 2/1/2023 1:5:6
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -12,12 +12,13 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(Relop Relop) { }
     public void visit(ExprInner ExprInner) { }
     public void visit(StatementList StatementList) { }
+    public void visit(ClassName ClassName) { }
     public void visit(Factor Factor) { }
     public void visit(CondTerm CondTerm) { }
     public void visit(Inheritance Inheritance) { }
+    public void visit(ConstDeclInnerList ConstDeclInnerList) { }
     public void visit(Term Term) { }
     public void visit(Condition Condition) { }
-    public void visit(ConstDeclList ConstDeclList) { }
     public void visit(ActualParamList ActualParamList) { }
     public void visit(GlobalDeclList GlobalDeclList) { }
     public void visit(VarDeclList VarDeclList) { }
@@ -30,8 +31,8 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(ConditionStatements ConditionStatements) { }
     public void visit(CondFact CondFact) { }
     public void visit(MethodDeclList MethodDeclList) { }
-    public void visit(GlobalDecl GlobalDecl) { }
     public void visit(FormPars FormPars) { }
+    public void visit(GlobalDecl GlobalDecl) { }
     public void visit(ConstIdentValue ConstIdentValue) { }
     public void visit(Percop Percop) { visit(); }
     public void visit(Divop Divop) { visit(); }
@@ -103,6 +104,7 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(MethodDeclarations MethodDeclarations) { visit(); }
     public void visit(InheritanceDerived1 InheritanceDerived1) { visit(); }
     public void visit(Extends Extends) { visit(); }
+    public void visit(ClassDeclEnter ClassDeclEnter) { visit(); }
     public void visit(ClassDecl ClassDecl) { visit(); }
     public void visit(NoVarDecl NoVarDecl) { visit(); }
     public void visit(VarDeclarations VarDeclarations) { visit(); }
@@ -116,8 +118,9 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(IntConstIdentValue IntConstIdentValue) { visit(); }
     public void visit(SingleConstDecl SingleConstDecl) { visit(); }
     public void visit(ConstDecls ConstDecls) { visit(); }
-    public void visit(Type Type) { visit(); }
+    public void visit(ConstType ConstType) { visit(); }
     public void visit(ConstDecl ConstDecl) { visit(); }
+    public void visit(Type Type) { visit(); }
     public void visit(GlobalClassDeclaration GlobalClassDeclaration) { visit(); }
     public void visit(GlobalVarDeclaration GlobalVarDeclaration) { visit(); }
     public void visit(GlobalConstDeclaration GlobalConstDeclaration) { visit(); }
