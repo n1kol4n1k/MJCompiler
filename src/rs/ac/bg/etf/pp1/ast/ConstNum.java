@@ -1,24 +1,24 @@
 // generated with ast extension for cup
 // version 0.8
-// 2/1/2023 1:5:6
+// 3/1/2023 0:10:53
 
 
 package rs.ac.bg.etf.pp1.ast;
 
 public class ConstNum extends Factor {
 
-    private Integer N1;
+    private Integer numVal;
 
-    public ConstNum (Integer N1) {
-        this.N1=N1;
+    public ConstNum (Integer numVal) {
+        this.numVal=numVal;
     }
 
-    public Integer getN1() {
-        return N1;
+    public Integer getNumVal() {
+        return numVal;
     }
 
-    public void setN1(Integer N1) {
-        this.N1=N1;
+    public void setNumVal(Integer numVal) {
+        this.numVal=numVal;
     }
 
     public void accept(Visitor visitor) {
@@ -41,7 +41,7 @@ public class ConstNum extends Factor {
         buffer.append(tab);
         buffer.append("ConstNum(\n");
 
-        buffer.append(" "+tab+N1);
+        buffer.append(" "+tab+numVal);
         buffer.append("\n");
 
         buffer.append(tab);

@@ -1,5 +1,6 @@
 package rs.ac.bg.etf.pp1;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
@@ -9,14 +10,25 @@ import rs.ac.bg.etf.pp1.ast.BoolConstIdentValue;
 import rs.ac.bg.etf.pp1.ast.CharConstIdentValue;
 import rs.ac.bg.etf.pp1.ast.ClassDecl;
 import rs.ac.bg.etf.pp1.ast.ClassDeclEnter;
+import rs.ac.bg.etf.pp1.ast.ConstBool;
+import rs.ac.bg.etf.pp1.ast.ConstChar;
 import rs.ac.bg.etf.pp1.ast.ConstDecl;
+import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.ConstType;
 //import rs.ac.bg.etf.pp1.ast.Const;
 import rs.ac.bg.etf.pp1.ast.Designator;
+import rs.ac.bg.etf.pp1.ast.ExprBrackets;
+import rs.ac.bg.etf.pp1.ast.FactExpr;
+import rs.ac.bg.etf.pp1.ast.FactSingle;
+import rs.ac.bg.etf.pp1.ast.FormalParamDecl;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
 import rs.ac.bg.etf.pp1.ast.IntConstIdentValue;
 import rs.ac.bg.etf.pp1.ast.MethodDecl;
 import rs.ac.bg.etf.pp1.ast.MethodTypeName;
+import rs.ac.bg.etf.pp1.ast.NegativeExpr;
+import rs.ac.bg.etf.pp1.ast.NewArray;
+import rs.ac.bg.etf.pp1.ast.NewSingle;
+import rs.ac.bg.etf.pp1.ast.PositiveExpr;
 import rs.ac.bg.etf.pp1.ast.PrintStmt;
 //import rs.ac.bg.etf.pp1.ast.ProcCall;
 import rs.ac.bg.etf.pp1.ast.ProgName;
@@ -56,16 +68,20 @@ public class SemanticPass extends VisitorAdaptor {
 	//to be written in obj file header
 	int nVars;
 	Struct m_CurrentConstType = null;
+	Obj m_MainMethod = null;
+	boolean m_IsClassScope = false;
 
 	Logger log = Logger.getLogger(getClass());
 
 	//Lists
-	ArrayList<VarInfo> innerVarList = new ArrayList<VarInfo>();
+	ArrayList<VarInfo> m_innerVarList = new ArrayList<VarInfo>();
+	HashMap<Obj, ArrayList<Struct>> m_formParmsMap = new HashMap<Obj, ArrayList<Struct>>();
 	
 	//Symbol Table expansion with bool standard type
 	public void ExpandSymTable()
 	{
 		Tab.insert(Obj.Type, "bool", boolType);
+		Tab.insert(Obj.Type, "void", Tab.noType);
 	}
 	
 	//Entering program
@@ -85,12 +101,13 @@ public class SemanticPass extends VisitorAdaptor {
 
 	//Declaration of Variable(s)
 	public void visit(VarDecl varDecl) {
+		if(m_IsClassScope == true) { return; }
 		if(varDecl.getType().struct == Tab.noType)
 		{
 			report_error("Greska: tip deklarisane promenljive ne postoji", null);
 			return;
 		}
-		for(VarInfo varInfo : innerVarList)
+		for(VarInfo varInfo : m_innerVarList)
 		{
 			report_info("Deklarisana promenljiva "+ varInfo.m_Name, varDecl);
 			if(varInfo.m_IsArray == true)
@@ -104,16 +121,18 @@ public class SemanticPass extends VisitorAdaptor {
 			}
 			//TODO: Declaring an existing variable?
 		}
-		innerVarList.clear();
+		m_innerVarList.clear();
 	}
 	
 	public void visit(VarSingle varSingle)
 	{
+		if(m_IsClassScope == true) { return; }
 		AddVarInfo(varSingle.getVName(), false);
 	}
 	
 	public void visit(VarArray varArray)
 	{
+		if(m_IsClassScope == true) { return; }
 		AddVarInfo(varArray.getVName(), true);
 	}
 	
@@ -182,17 +201,46 @@ public class SemanticPass extends VisitorAdaptor {
 		newConst.setAdr(charConstIdentValue.getCharValue());
 	}
 	
+	//Classes scope detection
+	public void visit(ClassDeclEnter classDeclEnter)
+	{
+		m_IsClassScope = true;
+	}
+	public void visit(ClassDecl classDecl)
+	{
+		m_IsClassScope = false;
+	}
+	
 	//Methods
 	//Enter method declaration
 	public void visit(MethodTypeName methodTypeName) {
+		if(m_IsClassScope == true) { return; }
+		
+		//Check if it is main method
+		boolean isMain = false;
+		if(methodTypeName.getMethName() == "main")
+		{
+			if(methodTypeName.getType().struct != Tab.noType)
+			{
+				report_error("Greska: main() funkcija ne sme da vraca vrednost!", methodTypeName);
+			}
+			else
+			{
+				isMain = true;
+			}
+		}
+		
 		m_currentMethod = Tab.insert(Obj.Meth, methodTypeName.getMethName(), methodTypeName.getType().struct);
 		methodTypeName.obj = m_currentMethod;
+		if(isMain == true) { m_MainMethod = m_currentMethod; }
+		m_formParmsMap.put(m_currentMethod, new ArrayList<Struct>());
 		Tab.openScope();
 		report_info("Obradjuje se funkcija " + methodTypeName.getMethName(), methodTypeName);
 	}
 
 	//Exit method declaration
 	public void visit(MethodDecl methodDecl) {
+		if(m_IsClassScope == true) { return; }
 		if (!m_returnFound && m_currentMethod.getType() != Tab.noType) {
 			report_error("Semanticka greska na liniji " + methodDecl.getLine() + ": funcija " + m_currentMethod.getName() + " nema return iskaz!", null);
 		}
@@ -202,13 +250,30 @@ public class SemanticPass extends VisitorAdaptor {
 		
 		m_returnFound = false;
 		m_currentMethod = null;
-		
-		//TODO: return is of different type than curr method return type
 	}
 	
+	//Return with value
 	public void visit(ReturnStmt returnStmt)
 	{
 		m_returnFound = true;
+		Struct currMethType = m_currentMethod.getType();
+		if (!currMethType.compatibleWith(returnStmt.getExpr().struct)) {
+			report_error("Greska na liniji " + returnStmt.getLine() + " : " + "tip izraza u return naredbi ne slaze se sa tipom povratne vrednosti funkcije " + m_currentMethod.getName(), null);
+		}	
+	}
+	
+	//Formal params 
+	public void visit(FormalParamDecl formalParamDecl)
+	{
+		if(m_MainMethod == m_currentMethod)
+		{
+			report_error("Greska: main metod NE sme imati parametre!", formalParamDecl);
+		}
+		
+		Struct paramType = formalParamDecl.getType().struct;
+		Tab.insert(Obj.Var, formalParamDecl.getFpName(), paramType);
+		ArrayList<Struct> currMethodFormParams = m_formParmsMap.get(m_currentMethod);
+		currMethodFormParams.add(paramType);
 	}
 /*
 	
@@ -239,45 +304,87 @@ public class SemanticPass extends VisitorAdaptor {
 			//RESULT = Tab.noType;
 		}     	
 	}    
+*/
+	
+	//PROPAGATE TYPES IN EXPRESSIONS
+	//Factor
+	public void visit(ConstNum constNum)
+	{
+		constNum.struct = Tab.intType;
+	}
+	public void visit(ConstChar constChar)
+	{
+		constChar.struct = Tab.charType;
+	}
+	public void visit(ConstBool constBool)
+	{
+		constBool.struct = boolType;
+	}
+	public void visit(Var var)
+	{
+		var.struct = var.getDesignator().obj.getType();
+	}
+	public void visit(FuncCall funcCall)
+	{
+		funcCall.struct = funcCall.getDesignator().obj.getType();
+	}
+	public void visit(ExprBrackets exprBrackets)
+	{
+		exprBrackets.struct = exprBrackets.getExpr().struct;
+	}
+	public void visit(NewArray newArray)
+	{
+		if(newArray.getExpr().struct != Tab.intType)
+		{
+			report_error("Greska: broj elemenata niza pri kreiranju mora da bude tipa int", newArray);
+		}
 
-	public void visit(AddExpr addExpr) {
-		Struct te = addExpr.getExpr().struct;
+		newArray.struct = new Struct(Struct.Array, newArray.getType().struct);
+	}
+	public void visit(NewSingle newSingle)
+	{
+		newSingle.struct = newSingle.getType().struct;
+	}
+	//Term
+	public void visit(FactSingle factSingle) 
+	{
+		factSingle.struct = factSingle.getFactor().struct;
+	}
+	public void visit(FactExpr factExpr) 
+	{
+		Struct te = factExpr.getTerm().struct;
+		Struct f = factExpr.getFactor().struct;
+		if (te.equals(f) && te == Tab.intType)
+			factExpr.struct = te;
+		else {
+			report_error("Greska na liniji "+ factExpr.getLine()+" : nekompatibilni tipovi u izrazu za mnozenje.", null);
+			factExpr.struct = Tab.noType;
+		}
+	}
+	//Expression
+	public void visit(TermExpr termExpr) 
+	{
+		termExpr.struct = termExpr.getTerm().struct;
+	}
+	public void visit(AddExpr addExpr) 
+	{
+		Struct te = addExpr.getExprInner().struct;
 		Struct t = addExpr.getTerm().struct;
 		if (te.equals(t) && te == Tab.intType)
 			addExpr.struct = te;
 		else {
 			report_error("Greska na liniji "+ addExpr.getLine()+" : nekompatibilni tipovi u izrazu za sabiranje.", null);
 			addExpr.struct = Tab.noType;
-		} 
-	}
-
-	public void visit(TermExpr termExpr) {
-		termExpr.struct = termExpr.getTerm().struct;
-	}
-
-	public void visit(Term term) {
-		term.struct = term.getFactor().struct;    	
-	}
-
-	public void visit(Const cnst){
-		cnst.struct = Tab.intType;    	
-	}
-	
-	public void visit(Var var) {
-		var.struct = var.getDesignator().obj.getType();
-	}
-
-	public void visit(FuncCall funcCall){
-		Obj func = funcCall.getDesignator().obj;
-		if (Obj.Meth == func.getKind()) { 
-			report_info("Pronadjen poziv funkcije " + func.getName() + " na liniji " + funcCall.getLine(), null);
-			funcCall.struct = func.getType();
-		} 
-		else {
-			report_error("Greska na liniji " + funcCall.getLine()+" : ime " + func.getName() + " nije funkcija!", null);
-			funcCall.struct = Tab.noType;
 		}
-
+	}
+	//(Minus) Expression
+	public void visit(NegativeExpr negativeExpr) 
+	{
+		negativeExpr.struct = negativeExpr.getExprInner().struct;
+	}
+	public void visit(PositiveExpr positiveExpr) 
+	{
+		positiveExpr.struct = positiveExpr.getExprInner().struct;
 	}
 
 	public void visit(Designator designator){
@@ -286,7 +393,7 @@ public class SemanticPass extends VisitorAdaptor {
 			report_error("Greska na liniji " + designator.getLine()+ " : ime "+designator.getName()+" nije deklarisano! ", null);
 		}
 		designator.obj = obj;
-	}*/
+	}
 	
 	public boolean passed() {
 		return !errorDetected;
@@ -295,7 +402,7 @@ public class SemanticPass extends VisitorAdaptor {
 	//Helpers
 	private void AddVarInfo(String name, boolean isArray)
 	{
-		innerVarList.add(new VarInfo(name, isArray));
+		m_innerVarList.add(new VarInfo(name, isArray));
 	}
 	
 	//Reports

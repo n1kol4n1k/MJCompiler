@@ -77,10 +77,10 @@ nonterminal GlobalDecl, ConstDecl, VarDecl, ClassDecl, VarIdent, FormalParamDecl
 //Lists
 nonterminal GlobalDeclList, MethodDeclList, ConstDeclInnerList, VarDeclInnerList, VarDeclList;
 nonterminal StatementList, FormalParamList, DesignatorList, ActualParamList;
-nonterminal ExprInner;
 
 //Types and calculations
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact, ConstType;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct ExprInner;
 
 //Operations
 nonterminal Relop, Addop, Mulop;
@@ -171,7 +171,7 @@ FormalParamList ::= (FormalParamDecls) FormalParamList COMMA FormalParamDecl
 				| (SingleFormalParamDecl) FormalParamDecl
 				;
 					
-FormalParamDecl ::= (FormalParamDecl) Type IDENT 
+FormalParamDecl ::= (FormalParamDecl) Type IDENT:fpName
 				;
 
 StatementList ::= (Statements) StatementList Statement 
@@ -255,13 +255,13 @@ Term ::= (FactSingle) Factor:t
 				| (FactExpr) Term:te Mulop Factor:t
 				;
 
-Factor ::= (ConstNum) NUMBER
-				| (ConstChar) CHAR
-				| (ConstBool) BOOL
+Factor ::= (ConstNum) NUMBER:numVal
+				| (ConstChar) CHAR:charVal
+				| (ConstBool) BOOL:boolVal
 				| (Var) Designator:d
 		    	| (FuncCall) Designator:func LPAREN ActualPars RPAREN
-		    	| (ExprBrackets) LPAREN Expr RPAREN
-		    	| (NewArray) NEW Type:t LSQUAREBR Expr RSQUAREBR
+		    	| (ExprBrackets) LPAREN Expr:t RPAREN
+		    	| (NewArray) NEW Type:t LSQUAREBR Expr:te RSQUAREBR
 		    	| (NewSingle) NEW Type:t LPAREN ActualPars RPAREN
 		   		;
 

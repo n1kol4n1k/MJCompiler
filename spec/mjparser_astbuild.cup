@@ -89,10 +89,10 @@ nonterminal StatementList StatementList;
 nonterminal FormalParamList FormalParamList;
 nonterminal DesignatorList DesignatorList;
 nonterminal ActualParamList ActualParamList;
-nonterminal ExprInner ExprInner;
 
 //Types and calculations
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact, ConstType;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct ExprInner;
 
 //Operations
 nonterminal Relop Relop;
@@ -189,7 +189,7 @@ FormalParamList ::= (FormalParamDecls) FormalParamList:F1 COMMA FormalParamDecl:
 				| (SingleFormalParamDecl) FormalParamDecl:F1 {: RESULT=new SingleFormalParamDecl(F1); RESULT.setLine(F1left); :}
 				;
 					
-FormalParamDecl ::= (FormalParamDecl) Type:T1 IDENT:I2 {: RESULT=new FormalParamDecl(T1, I2); RESULT.setLine(T1left); :} 
+FormalParamDecl ::= (FormalParamDecl) Type:T1 IDENT:fpName {: RESULT=new FormalParamDecl(T1, fpName); RESULT.setLine(T1left); :}
 				;
 
 StatementList ::= (Statements) StatementList:S1 Statement:S2 {: RESULT=new Statements(S1, S2); RESULT.setLine(S1left); :} 
@@ -273,13 +273,13 @@ Term ::= (FactSingle) Factor:t {: RESULT=new FactSingle(t); RESULT.setLine(tleft
 				| (FactExpr) Term:te Mulop:M1 Factor:t {: RESULT=new FactExpr(te, M1, t); RESULT.setLine(teleft); :}
 				;
 
-Factor ::= (ConstNum) NUMBER:N1 {: RESULT=new ConstNum(N1); RESULT.setLine(N1left); :}
-				| (ConstChar) CHAR:C1 {: RESULT=new ConstChar(C1); RESULT.setLine(C1left); :}
-				| (ConstBool) BOOL:B1 {: RESULT=new ConstBool(B1); RESULT.setLine(B1left); :}
+Factor ::= (ConstNum) NUMBER:numVal {: RESULT=new ConstNum(numVal); RESULT.setLine(numValleft); :}
+				| (ConstChar) CHAR:charVal {: RESULT=new ConstChar(charVal); RESULT.setLine(charValleft); :}
+				| (ConstBool) BOOL:boolVal {: RESULT=new ConstBool(boolVal); RESULT.setLine(boolValleft); :}
 				| (Var) Designator:d {: RESULT=new Var(d); RESULT.setLine(dleft); :}
 		    	| (FuncCall) Designator:func LPAREN ActualPars:A1 RPAREN {: RESULT=new FuncCall(func, A1); RESULT.setLine(funcleft); :}
-		    	| (ExprBrackets) LPAREN Expr:E1 RPAREN {: RESULT=new ExprBrackets(E1); RESULT.setLine(E1left); :}
-		    	| (NewArray) NEW Type:t LSQUAREBR Expr:E1 RSQUAREBR {: RESULT=new NewArray(t, E1); RESULT.setLine(tleft); :}
+		    	| (ExprBrackets) LPAREN Expr:t RPAREN {: RESULT=new ExprBrackets(t); RESULT.setLine(tleft); :}
+		    	| (NewArray) NEW Type:t LSQUAREBR Expr:te RSQUAREBR {: RESULT=new NewArray(t, te); RESULT.setLine(tleft); :}
 		    	| (NewSingle) NEW Type:t LPAREN ActualPars:A1 RPAREN {: RESULT=new NewSingle(t, A1); RESULT.setLine(tleft); :}
 		   		;
 

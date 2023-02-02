@@ -4,7 +4,7 @@ program MJProgram
 	
 	int k () int c; {
 		c = 1;
-		return c+2;
+		return 2;
 	}
 	
 	int main()
