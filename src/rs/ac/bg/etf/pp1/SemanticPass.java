@@ -1,11 +1,14 @@
 package rs.ac.bg.etf.pp1;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import rs.ac.bg.etf.pp1.ast.ActualParam;
 import rs.ac.bg.etf.pp1.ast.AddExpr;
 import rs.ac.bg.etf.pp1.ast.Assignment;
+import rs.ac.bg.etf.pp1.ast.BlankReturnStmt;
 import rs.ac.bg.etf.pp1.ast.BoolConstIdentValue;
 import rs.ac.bg.etf.pp1.ast.CharConstIdentValue;
 import rs.ac.bg.etf.pp1.ast.ClassDecl;
@@ -36,6 +39,7 @@ import rs.ac.bg.etf.pp1.ast.PrintStmt;
 import rs.ac.bg.etf.pp1.ast.ProgName;
 import rs.ac.bg.etf.pp1.ast.Program;
 import rs.ac.bg.etf.pp1.ast.ReturnStmt;
+import rs.ac.bg.etf.pp1.ast.StatementFuncCall;
 //import rs.ac.bg.etf.pp1.ast.ReturnExpr;
 import rs.ac.bg.etf.pp1.ast.SyntaxNode;
 import rs.ac.bg.etf.pp1.ast.Term;
@@ -78,6 +82,7 @@ public class SemanticPass extends VisitorAdaptor {
 	//Lists
 	ArrayList<VarInfo> m_innerVarList = new ArrayList<VarInfo>();
 	HashMap<Obj, ArrayList<Struct>> m_formParmsMap = new HashMap<Obj, ArrayList<Struct>>();
+	ArrayList<Struct> m_currentActualParamsTypes = new ArrayList<Struct>();
 	
 	//Symbol Table expansion with bool standard type
 	public void ExpandSymTable()
@@ -274,6 +279,14 @@ public class SemanticPass extends VisitorAdaptor {
 			report_error("Greska na liniji " + returnStmt.getLine() + " : " + "tip izraza u return naredbi ne slaze se sa tipom povratne vrednosti funkcije " + m_currentMethod.getName(), null);
 		}	
 	}
+	//Blank return
+	public void visit(BlankReturnStmt blankReturnStmt)
+	{
+		if(m_currentMethod.getType() != Tab.noType)
+		{
+			report_error("Greska: metoda " + m_currentMethod.getName() + " mora da vrati povratnu vrednost", blankReturnStmt);
+		}
+	}
 	
 	//Formal params 
 	public void visit(FormalParamDecl formalParamDecl)
@@ -288,36 +301,68 @@ public class SemanticPass extends VisitorAdaptor {
 		ArrayList<Struct> currMethodFormParams = m_formParmsMap.get(m_currentMethod);
 		currMethodFormParams.add(paramType);
 	}
-/*
+	//Actual params
+	public void visit(ActualParam actualParam)
+	{
+		m_currentActualParamsTypes.add(actualParam.getExpr().struct);
+	}
+	public void visit(FuncCall funcCall)
+	{
+		Obj funcObj = funcCall.getDesignator().obj;
+		CheckFuncArgs(funcObj, funcCall);
+		m_currentActualParamsTypes.clear();
+		PropagateFuncType(funcCall);
+	}
+	public void visit(StatementFuncCall statementFuncCall)
+	{
+		Obj funcObj = statementFuncCall.getDesignator().obj;
+		CheckFuncArgs(funcObj, statementFuncCall);
+		m_currentActualParamsTypes.clear();
+	}
 	
-
+	//Helper function to check if actual params match formal
+	private void CheckFuncArgs(Obj funcObj, SyntaxNode nodeInfo)
+	{
+		if(funcObj.getKind() != Obj.Meth)
+		{
+			report_error("Greska: " + funcObj.getName() + " NIJE funkcija", nodeInfo);
+		}
+		else
+		{
+			ArrayList<Struct> formParams = m_formParmsMap.get(funcObj);
+			if(formParams.size() != m_currentActualParamsTypes.size())
+			{
+				report_error("Greska: pogresan broj parametara u funkciji" + funcObj.getName(), nodeInfo);
+			}
+			else
+			{
+				Iterator<Struct> formParamIt = formParams.iterator();
+				Iterator<Struct> actParamIt = m_currentActualParamsTypes.iterator();
+				while(formParamIt.hasNext())
+				{
+					Struct formStruct = formParamIt.next();
+					Struct actStruct = actParamIt.next();
+					if(formStruct.compatibleWith(actStruct) == false)
+					{
+						report_error("Greska: pogresan tip parametara u funkciji" + funcObj.getName(), nodeInfo);
+						break;
+					}
+				}
+			}
+		}
+	}
 	
-	public void visit(Assignment assignment) {
+	//Assignment
+	public void visit(Assignment assignment) 
+	{
 		if (!assignment.getExpr().struct.assignableTo(assignment.getDesignator().obj.getType()))
+		{
 			report_error("Greska na liniji " + assignment.getLine() + " : " + " nekompatibilni tipovi u dodeli vrednosti ", null);
+		}
 	}
 
-*/
-	/*public void visit(ReturnExpr returnExpr){
-		returnFound = true;
-		Struct currMethType = currentMethod.getType();
-		if (!currMethType.compatibleWith(returnExpr.getExpr().struct)) {
-			report_error("Greska na liniji " + returnExpr.getLine() + " : " + "tip izraza u return naredbi ne slaze se sa tipom povratne vrednosti funkcije " + currentMethod.getName(), null);
-		}			  	     	
-	}
-
-	public void visit(ProcCall procCall){
-		Obj func = procCall.getDesignator().obj;
-		if (Obj.Meth == func.getKind()) { 
-			report_info("Pronadjen poziv funkcije " + func.getName() + " na liniji " + procCall.getLine(), null);
-			//RESULT = func.getType();
-		} 
-		else {
-			report_error("Greska na liniji " + procCall.getLine()+" : ime " + func.getName() + " nije funkcija!", null);
-			//RESULT = Tab.noType;
-		}     	
-	}    
-*/
+	//MultiAssignment 0_0
+	
 	
 	//PROPAGATE TYPES IN EXPRESSIONS
 	//Factor
@@ -337,7 +382,7 @@ public class SemanticPass extends VisitorAdaptor {
 	{
 		var.struct = var.getDesignator().obj.getType();
 	}
-	public void visit(FuncCall funcCall)
+	public void PropagateFuncType(FuncCall funcCall)
 	{
 		funcCall.struct = funcCall.getDesignator().obj.getType();
 	}

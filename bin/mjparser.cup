@@ -72,6 +72,7 @@ terminal Character CHAR;
 //Objects
 nonterminal rs.etf.pp1.symboltable.concepts.Obj Program, ProgName, Designator, MethodDecl, MethodTypeName, ClassName;
 nonterminal GlobalDecl, ConstDecl, VarDecl, ClassDecl, VarIdent, FormalParamDecl;
+nonterminal DesignatorStatement;
 
 
 //Lists
@@ -90,7 +91,7 @@ nonterminal ConstIdentValue;
 nonterminal Inheritance, FormPars, ActualPars;
 
 //Statements
-nonterminal Statement, DesignatorStatement, ConditionStatements;
+nonterminal Statement, ConditionStatements;
 
 //Precedences
 precedence left ELSE;
@@ -206,9 +207,7 @@ ConditionStatements ::= (CndSingleStmt) Statement
 				| (CndNOStmts) SEMI 
 			  	;
 
-//TODO: arrays
 //TODO: error recovery
-//TODO: function call
 DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e
 				| (Increment) Designator:dest DBLPLUS
 				| (Decrement) Designator:dest DBLMINUS
