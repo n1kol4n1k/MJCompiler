@@ -178,7 +178,8 @@ MethodDeclList ::= (MethodDeclarations) MethodDeclList:M1 MethodDecl:M2 {: RESUL
 MethodDecl ::= (MethodDecl) MethodTypeName:M1 LPAREN FormPars:F2 RPAREN VarDeclList:V3 LBRACE StatementList:S4 RBRACE {: RESULT=new MethodDecl(M1, F2, V3, S4); RESULT.setLine(M1left); :} 
 			   	;
 
-MethodTypeName ::= (MethodTypeName) Type:retType IDENT:methName {: RESULT=new MethodTypeName(retType, methName); RESULT.setLine(retTypeleft); :}
+MethodTypeName ::= (MethodBasicTypeName) Type:retType IDENT:methName {: RESULT=new MethodBasicTypeName(retType, methName); RESULT.setLine(retTypeleft); :}
+				| (MethodVoidName) VOID IDENT:methName {: RESULT=new MethodVoidName(methName); RESULT.setLine(methNameleft); :}
 				;
 
 FormPars ::= (FormParams) FormalParamList:F1 {: RESULT=new FormParams(F1); RESULT.setLine(F1left); :} 

@@ -5,13 +5,15 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class Extends extends Inheritance {
+public class MethodBasicTypeName extends MethodTypeName {
 
     private Type Type;
+    private String methName;
 
-    public Extends (Type Type) {
+    public MethodBasicTypeName (Type Type, String methName) {
         this.Type=Type;
         if(Type!=null) Type.setParent(this);
+        this.methName=methName;
     }
 
     public Type getType() {
@@ -20,6 +22,14 @@ public class Extends extends Inheritance {
 
     public void setType(Type Type) {
         this.Type=Type;
+    }
+
+    public String getMethName() {
+        return methName;
+    }
+
+    public void setMethName(String methName) {
+        this.methName=methName;
     }
 
     public void accept(Visitor visitor) {
@@ -43,7 +53,7 @@ public class Extends extends Inheritance {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("Extends(\n");
+        buffer.append("MethodBasicTypeName(\n");
 
         if(Type!=null)
             buffer.append(Type.toString("  "+tab));
@@ -51,8 +61,11 @@ public class Extends extends Inheritance {
             buffer.append(tab+"  null");
         buffer.append("\n");
 
+        buffer.append(" "+tab+methName);
+        buffer.append("\n");
+
         buffer.append(tab);
-        buffer.append(") [Extends]");
+        buffer.append(") [MethodBasicTypeName]");
         return buffer.toString();
     }
 }

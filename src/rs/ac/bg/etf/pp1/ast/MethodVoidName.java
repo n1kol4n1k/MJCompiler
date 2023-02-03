@@ -5,9 +5,20 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class GreaterEquals extends Relop {
+public class MethodVoidName extends MethodTypeName {
 
-    public GreaterEquals () {
+    private String methName;
+
+    public MethodVoidName (String methName) {
+        this.methName=methName;
+    }
+
+    public String getMethName() {
+        return methName;
+    }
+
+    public void setMethName(String methName) {
+        this.methName=methName;
     }
 
     public void accept(Visitor visitor) {
@@ -28,10 +39,13 @@ public class GreaterEquals extends Relop {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("GreaterEquals(\n");
+        buffer.append("MethodVoidName(\n");
+
+        buffer.append(" "+tab+methName);
+        buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [GreaterEquals]");
+        buffer.append(") [MethodVoidName]");
         return buffer.toString();
     }
 }

@@ -23,8 +23,10 @@ import rs.ac.bg.etf.pp1.ast.FactSingle;
 import rs.ac.bg.etf.pp1.ast.FormalParamDecl;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
 import rs.ac.bg.etf.pp1.ast.IntConstIdentValue;
+import rs.ac.bg.etf.pp1.ast.MethodBasicTypeName;
 import rs.ac.bg.etf.pp1.ast.MethodDecl;
 import rs.ac.bg.etf.pp1.ast.MethodTypeName;
+import rs.ac.bg.etf.pp1.ast.MethodVoidName;
 import rs.ac.bg.etf.pp1.ast.NegativeExpr;
 import rs.ac.bg.etf.pp1.ast.NewArray;
 import rs.ac.bg.etf.pp1.ast.NewSingle;
@@ -97,6 +99,10 @@ public class SemanticPass extends VisitorAdaptor {
 		nVars = Tab.currentScope.getnVars();
 		Tab.chainLocalSymbols(program.getProgName().obj);
 		Tab.closeScope();
+		if(m_MainMethod == null)
+		{
+			report_error("Nije pronadjen main metod!", null);
+		}
 	}
 
 	//Declaration of Variable(s)
@@ -213,29 +219,36 @@ public class SemanticPass extends VisitorAdaptor {
 	
 	//Methods
 	//Enter method declaration
-	public void visit(MethodTypeName methodTypeName) {
+	public void visit(MethodBasicTypeName methodBasicTypeName) {
 		if(m_IsClassScope == true) { return; }
 		
 		//Check if it is main method
-		boolean isMain = false;
-		if(methodTypeName.getMethName() == "main")
+		if(methodBasicTypeName.getMethName().equals("main"))
 		{
-			if(methodTypeName.getType().struct != Tab.noType)
-			{
-				report_error("Greska: main() funkcija ne sme da vraca vrednost!", methodTypeName);
-			}
-			else
-			{
-				isMain = true;
-			}
+			report_error("Greska: main() funkcija ne sme da vraca vrednost!", methodBasicTypeName);
 		}
 		
-		m_currentMethod = Tab.insert(Obj.Meth, methodTypeName.getMethName(), methodTypeName.getType().struct);
-		methodTypeName.obj = m_currentMethod;
-		if(isMain == true) { m_MainMethod = m_currentMethod; }
+		m_currentMethod = Tab.insert(Obj.Meth, methodBasicTypeName.getMethName(), methodBasicTypeName.getType().struct);
+		methodBasicTypeName.obj = m_currentMethod;
 		m_formParmsMap.put(m_currentMethod, new ArrayList<Struct>());
 		Tab.openScope();
-		report_info("Obradjuje se funkcija " + methodTypeName.getMethName(), methodTypeName);
+		report_info("Obradjuje se funkcija " + methodBasicTypeName.getMethName(), methodBasicTypeName);
+	}
+	//Enter void method declaration
+	public void visit(MethodVoidName methodVoidName) {
+		if(m_IsClassScope == true) { return; }
+		
+		m_currentMethod = Tab.insert(Obj.Meth, methodVoidName.getMethName(), Tab.noType);
+		methodVoidName.obj = m_currentMethod;
+		//Check if it is main method
+		if(methodVoidName.getMethName().equals("main"))
+		{
+			m_MainMethod = m_currentMethod;
+		}
+		
+		m_formParmsMap.put(m_currentMethod, new ArrayList<Struct>());
+		Tab.openScope();
+		report_info("Obradjuje se funkcija " + methodVoidName.getMethName(), methodVoidName);
 	}
 
 	//Exit method declaration

@@ -7,13 +7,12 @@ program MJProgram
 		return 2;
 	}
 	
-	int main()
+	void main()
 	char n, m, o;
 	{
 		y = 2;
 		x = y + 2;
 		y = k() + 3;
 		print(y);
-		return 0;
 	}
 }

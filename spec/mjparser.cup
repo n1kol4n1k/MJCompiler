@@ -160,7 +160,8 @@ MethodDeclList ::= (MethodDeclarations) MethodDeclList MethodDecl
 MethodDecl ::= (MethodDecl) MethodTypeName LPAREN FormPars RPAREN VarDeclList LBRACE StatementList RBRACE 
 			   	;
 
-MethodTypeName ::= (MethodTypeName) Type:retType IDENT:methName
+MethodTypeName ::= (MethodBasicTypeName) Type:retType IDENT:methName
+				| (MethodVoidName) VOID IDENT:methName
 				;
 
 FormPars ::= (FormParams) FormalParamList 
