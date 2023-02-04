@@ -5,24 +5,23 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class ActualParams extends ActualParamList {
+public class DesignatorElem extends Designator {
 
-    private ActualParamList ActualParamList;
+    private String name;
     private Expr Expr;
 
-    public ActualParams (ActualParamList ActualParamList, Expr Expr) {
-        this.ActualParamList=ActualParamList;
-        if(ActualParamList!=null) ActualParamList.setParent(this);
+    public DesignatorElem (String name, Expr Expr) {
+        this.name=name;
         this.Expr=Expr;
         if(Expr!=null) Expr.setParent(this);
     }
 
-    public ActualParamList getActualParamList() {
-        return ActualParamList;
+    public String getName() {
+        return name;
     }
 
-    public void setActualParamList(ActualParamList ActualParamList) {
-        this.ActualParamList=ActualParamList;
+    public void setName(String name) {
+        this.name=name;
     }
 
     public Expr getExpr() {
@@ -38,18 +37,15 @@ public class ActualParams extends ActualParamList {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(ActualParamList!=null) ActualParamList.accept(visitor);
         if(Expr!=null) Expr.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(ActualParamList!=null) ActualParamList.traverseTopDown(visitor);
         if(Expr!=null) Expr.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(ActualParamList!=null) ActualParamList.traverseBottomUp(visitor);
         if(Expr!=null) Expr.traverseBottomUp(visitor);
         accept(visitor);
     }
@@ -57,12 +53,9 @@ public class ActualParams extends ActualParamList {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("ActualParams(\n");
+        buffer.append("DesignatorElem(\n");
 
-        if(ActualParamList!=null)
-            buffer.append(ActualParamList.toString("  "+tab));
-        else
-            buffer.append(tab+"  null");
+        buffer.append(" "+tab+name);
         buffer.append("\n");
 
         if(Expr!=null)
@@ -72,7 +65,7 @@ public class ActualParams extends ActualParamList {
         buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [ActualParams]");
+        buffer.append(") [DesignatorElem]");
         return buffer.toString();
     }
 }

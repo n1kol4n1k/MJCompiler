@@ -105,6 +105,7 @@ nonterminal ConstIdentValue ConstIdentValue;
 nonterminal Inheritance Inheritance;
 nonterminal FormPars FormPars;
 nonterminal ActualPars ActualPars;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj DesignatorWithEmpty;
 
 //Statements
 nonterminal Statement Statement;
@@ -228,16 +229,21 @@ ConditionStatements ::= (CndSingleStmt) Statement:S1 {: RESULT=new CndSingleStmt
 DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e {: RESULT=new Assignment(dest, e); RESULT.setLine(destleft); :}
 				| (Increment) Designator:dest DBLPLUS {: RESULT=new Increment(dest); RESULT.setLine(destleft); :}
 				| (Decrement) Designator:dest DBLMINUS {: RESULT=new Decrement(dest); RESULT.setLine(destleft); :}
-				| (MultiAssignment) LSQUAREBR DesignatorList:D1 RSQUAREBR EQUAL Designator:D2 {: RESULT=new MultiAssignment(D1, D2); RESULT.setLine(D1left); :}
+				| (MultiAssignment) LSQUAREBR RSQUAREBR EQUAL Designator:D1 {: RESULT=new MultiAssignment(D1); RESULT.setLine(D1left); :}
 				| (StatementFuncCall) Designator:dest LPAREN ActualPars:A1 RPAREN {: RESULT=new StatementFuncCall(dest, A1); RESULT.setLine(destleft); :}
 				;
 
-Designator ::= (Designator) IDENT:name {: RESULT=new Designator(name); RESULT.setLine(nameleft); :}
+Designator ::= (DesignatorBasic) IDENT:name {: RESULT=new DesignatorBasic(name); RESULT.setLine(nameleft); :}
+				| (DesignatorElem) IDENT:name LSQUAREBR Expr:e RSQUAREBR {: RESULT=new DesignatorElem(name, e); RESULT.setLine(nameleft); :}
 				;
 
 DesignatorList ::= (SingleDesignator) Designator:D1 {: RESULT=new SingleDesignator(D1); RESULT.setLine(D1left); :}
-				| (MultiDesignator) DesignatorList:D1 COMMA Designator:D2 {: RESULT=new MultiDesignator(D1, D2); RESULT.setLine(D1left); :}
+				| (MultiDesignator) DesignatorList:D1 COMMA DesignatorWithEmpty:D2 {: RESULT=new MultiDesignator(D1, D2); RESULT.setLine(D1left); :}
 				; 
+
+DesignatorWithEmpty ::= (EmptyDes) {: RESULT=new EmptyDes(); :} /*epsilon*/
+				| (NonEmptyDes) Designator:D1 {: RESULT=new NonEmptyDes(D1); RESULT.setLine(D1left); :}
+				;
 
 Condition ::= (CondSingleTerm) CondTerm:C1 {: RESULT=new CondSingleTerm(C1); RESULT.setLine(C1left); :}
 				| (CondMultiTerms) Condition:C1 DBLVER CondTerm:C2 {: RESULT=new CondMultiTerms(C1, C2); RESULT.setLine(C1left); :}

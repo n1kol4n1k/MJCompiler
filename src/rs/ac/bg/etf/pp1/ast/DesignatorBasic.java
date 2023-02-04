@@ -5,9 +5,20 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class NoFormParam extends FormPars {
+public class DesignatorBasic extends Designator {
 
-    public NoFormParam () {
+    private String name;
+
+    public DesignatorBasic (String name) {
+        this.name=name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name=name;
     }
 
     public void accept(Visitor visitor) {
@@ -28,10 +39,13 @@ public class NoFormParam extends FormPars {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("NoFormParam(\n");
+        buffer.append("DesignatorBasic(\n");
+
+        buffer.append(" "+tab+name);
+        buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [NoFormParam]");
+        buffer.append(") [DesignatorBasic]");
         return buffer.toString();
     }
 }

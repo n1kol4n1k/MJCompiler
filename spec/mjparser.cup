@@ -89,6 +89,7 @@ nonterminal ConstIdentValue;
 
 //Options
 nonterminal Inheritance, FormPars, ActualPars;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj DesignatorWithEmpty;
 
 //Statements
 nonterminal Statement, ConditionStatements;
@@ -211,16 +212,21 @@ ConditionStatements ::= (CndSingleStmt) Statement
 DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e
 				| (Increment) Designator:dest DBLPLUS
 				| (Decrement) Designator:dest DBLMINUS
-				| (MultiAssignment) LSQUAREBR DesignatorList RSQUAREBR EQUAL Designator
+				| (MultiAssignment) LSQUAREBR RSQUAREBR EQUAL Designator
 				| (StatementFuncCall) Designator:dest LPAREN ActualPars RPAREN
 				;
 
-Designator ::= (Designator) IDENT:name
+Designator ::= (DesignatorBasic) IDENT:name
+				| (DesignatorElem) IDENT:name LSQUAREBR Expr:e RSQUAREBR
 				;
 
 DesignatorList ::= (SingleDesignator) Designator
-				| (MultiDesignator) DesignatorList COMMA Designator
+				| (MultiDesignator) DesignatorList COMMA DesignatorWithEmpty
 				; 
+
+DesignatorWithEmpty ::= (EmptyDes) /*epsilon*/
+				| (NonEmptyDes) Designator
+				;
 
 Condition ::= (CondSingleTerm) CondTerm
 				| (CondMultiTerms) Condition DBLVER CondTerm

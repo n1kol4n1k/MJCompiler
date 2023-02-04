@@ -5,13 +5,13 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public abstract class CondTerm implements SyntaxNode {
+public abstract class DesignatorWithEmpty implements SyntaxNode {
 
     private SyntaxNode parent;
 
     private int line;
 
-    public rs.etf.pp1.symboltable.concepts.Struct struct = null;
+    public rs.etf.pp1.symboltable.concepts.Obj obj = null;
 
     public SyntaxNode getParent() {
         return parent;

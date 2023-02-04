@@ -20,6 +20,9 @@ import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.ConstType;
 //import rs.ac.bg.etf.pp1.ast.Const;
 import rs.ac.bg.etf.pp1.ast.Designator;
+import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
+import rs.ac.bg.etf.pp1.ast.DesignatorElem;
+import rs.ac.bg.etf.pp1.ast.EmptyDes;
 import rs.ac.bg.etf.pp1.ast.ExprBrackets;
 import rs.ac.bg.etf.pp1.ast.FactExpr;
 import rs.ac.bg.etf.pp1.ast.FactSingle;
@@ -30,6 +33,8 @@ import rs.ac.bg.etf.pp1.ast.MethodBasicTypeName;
 import rs.ac.bg.etf.pp1.ast.MethodDecl;
 import rs.ac.bg.etf.pp1.ast.MethodTypeName;
 import rs.ac.bg.etf.pp1.ast.MethodVoidName;
+import rs.ac.bg.etf.pp1.ast.MultiAssignment;
+import rs.ac.bg.etf.pp1.ast.MultiDesignator;
 import rs.ac.bg.etf.pp1.ast.NegativeExpr;
 import rs.ac.bg.etf.pp1.ast.NewArray;
 import rs.ac.bg.etf.pp1.ast.NewSingle;
@@ -39,6 +44,7 @@ import rs.ac.bg.etf.pp1.ast.PrintStmt;
 import rs.ac.bg.etf.pp1.ast.ProgName;
 import rs.ac.bg.etf.pp1.ast.Program;
 import rs.ac.bg.etf.pp1.ast.ReturnStmt;
+import rs.ac.bg.etf.pp1.ast.SingleDesignator;
 import rs.ac.bg.etf.pp1.ast.StatementFuncCall;
 //import rs.ac.bg.etf.pp1.ast.ReturnExpr;
 import rs.ac.bg.etf.pp1.ast.SyntaxNode;
@@ -54,6 +60,7 @@ import rs.ac.bg.etf.pp1.ast.VisitorAdaptor;
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.Obj;
 import rs.etf.pp1.symboltable.concepts.Struct;
+import rs.ac.bg.etf.pp1.ast.NonEmptyDes;
 
 public class SemanticPass extends VisitorAdaptor {
 	
@@ -76,6 +83,7 @@ public class SemanticPass extends VisitorAdaptor {
 	Struct m_CurrentConstType = null;
 	Obj m_MainMethod = null;
 	boolean m_IsClassScope = false;
+	boolean m_IsArray = false;
 
 	Logger log = Logger.getLogger(getClass());
 
@@ -83,12 +91,21 @@ public class SemanticPass extends VisitorAdaptor {
 	ArrayList<VarInfo> m_innerVarList = new ArrayList<VarInfo>();
 	HashMap<Obj, ArrayList<Struct>> m_formParmsMap = new HashMap<Obj, ArrayList<Struct>>();
 	ArrayList<Struct> m_currentActualParamsTypes = new ArrayList<Struct>();
+	ArrayList<Obj> m_MultiAssignmentDesignators = new ArrayList<Obj>();
 	
 	//Symbol Table expansion with bool standard type
 	public void ExpandSymTable()
 	{
 		Tab.insert(Obj.Type, "bool", boolType);
 		Tab.insert(Obj.Type, "void", Tab.noType);
+		//Adding existing function for params check
+		ArrayList<Struct> chrParamType = new ArrayList<Struct>();
+		chrParamType.add(Tab.intType);
+		ArrayList<Struct> ordParamType = new ArrayList<Struct>();
+		ordParamType.add(Tab.charType);
+		//len(int/char[]) poseban slucaj
+		m_formParmsMap.put(Tab.chrObj, chrParamType);
+		m_formParmsMap.put(Tab.ordObj, ordParamType);
 	}
 	
 	//Entering program
@@ -120,17 +137,20 @@ public class SemanticPass extends VisitorAdaptor {
 		}
 		for(VarInfo varInfo : m_innerVarList)
 		{
+			if(Tab.currentScope.findSymbol(varInfo.m_Name) != null)
+			{
+				report_error("Greska, promenljiva " + varInfo.m_Name + " vec postoji deklarisana!", varDecl);
+				continue;
+			}
 			report_info("Deklarisana promenljiva "+ varInfo.m_Name, varDecl);
 			if(varInfo.m_IsArray == true)
 			{
-				//TODO: List of new types arrays, to prevent multiple instances of same type
 				Tab.insert(Obj.Var, varInfo.m_Name, new Struct(Struct.Array, varDecl.getType().struct));
 			}
 			else
 			{
 				Tab.insert(Obj.Var, varInfo.m_Name, varDecl.getType().struct);
 			}
-			//TODO: Declaring an existing variable?
 		}
 		m_innerVarList.clear();
 	}
@@ -295,6 +315,10 @@ public class SemanticPass extends VisitorAdaptor {
 		{
 			report_error("Greska: main metod NE sme imati parametre!", formalParamDecl);
 		}
+		if(Tab.currentScope.findSymbol(formalParamDecl.getFpName()) != null)
+		{
+			report_error("Greska, formalni parametar " + formalParamDecl.getFpName() + " vec postoji deklarisan!", formalParamDecl);
+		}
 		
 		Struct paramType = formalParamDecl.getType().struct;
 		Tab.insert(Obj.Var, formalParamDecl.getFpName(), paramType);
@@ -323,6 +347,23 @@ public class SemanticPass extends VisitorAdaptor {
 	//Helper function to check if actual params match formal
 	private void CheckFuncArgs(Obj funcObj, SyntaxNode nodeInfo)
 	{
+		//Special case for standard method 'len'
+		if(funcObj.getName().equals("len") == true)
+		{
+			if(m_currentActualParamsTypes.size() != 1)
+			{
+				report_error("Greska: pogresan broj parametara u funkciji len", nodeInfo);
+				return;
+			}
+			Struct paramStruct = m_currentActualParamsTypes.get(0);
+			if((paramStruct.getKind() == Struct.Array &&
+					(paramStruct.getElemType().equals(Tab.intType) || 
+					paramStruct.getElemType().equals(Tab.charType))) == false)
+			{
+				report_error("Greska: pogresan tip parametara u funkciji len", nodeInfo);
+				return;
+			}
+		}
 		if(funcObj.getKind() != Obj.Meth)
 		{
 			report_error("Greska: " + funcObj.getName() + " NIJE funkcija", nodeInfo);
@@ -332,7 +373,7 @@ public class SemanticPass extends VisitorAdaptor {
 			ArrayList<Struct> formParams = m_formParmsMap.get(funcObj);
 			if(formParams.size() != m_currentActualParamsTypes.size())
 			{
-				report_error("Greska: pogresan broj parametara u funkciji" + funcObj.getName(), nodeInfo);
+				report_error("Greska: pogresan broj parametara u funkciji " + funcObj.getName(), nodeInfo);
 			}
 			else
 			{
@@ -344,7 +385,7 @@ public class SemanticPass extends VisitorAdaptor {
 					Struct actStruct = actParamIt.next();
 					if(formStruct.compatibleWith(actStruct) == false)
 					{
-						report_error("Greska: pogresan tip parametara u funkciji" + funcObj.getName(), nodeInfo);
+						report_error("Greska: pogresan tip parametara u funkciji " + funcObj.getName(), nodeInfo);
 						break;
 					}
 				}
@@ -359,10 +400,59 @@ public class SemanticPass extends VisitorAdaptor {
 		{
 			report_error("Greska na liniji " + assignment.getLine() + " : " + " nekompatibilni tipovi u dodeli vrednosti ", null);
 		}
+		report_info("Dodela vrednosti " + assignment.getDesignator().obj.getName(), assignment);
 	}
 
 	//MultiAssignment 0_0
+	//Exiting multi assignment
+	public void visit(MultiAssignment multiAssignment)
+	{
+		for(Obj designator : m_MultiAssignmentDesignators)
+		{
+			//can be null, when there is no designator
+			if(designator != null)
+			{
+				int desKind = designator.getKind();
+				if(desKind != Obj.Var && desKind != Obj.Elem && desKind != Obj.Fld)
+				{
+					report_error("Greska: U visestrukoj dodeli, ime " + designator.getName() + 
+					" mora biti promenljiva, element niza ili polje.", multiAssignment);
+				}
+			}
+		}
+		
+		Obj rightDesignator = multiAssignment.getDesignator().obj;
+		if(rightDesignator.getType().getKind() != Struct.Array)
+		{
+			report_error("Greska: U visestrukoj dodeli, sa desne strane mora biti niz", multiAssignment);
+		}
+		/* REPORT IN RUNTIME, when we know array size
+		else
+		{
+			if(m_MultiAssignmentDesignators.size() > rightDesignator.size())	
+		}
+		*/
+		m_MultiAssignmentDesignators.clear();
+	}
 	
+	//Helper production for empty designator in list
+	public void visit(EmptyDes emptyDes)
+	{
+		emptyDes.obj = null;
+	}
+	public void visit(NonEmptyDes nonEmptyDes)
+	{
+		nonEmptyDes.obj = nonEmptyDes.getDesignator().obj;
+	}
+	//Populate member list
+	public void visit(SingleDesignator singleDesignator)
+	{
+		m_MultiAssignmentDesignators.add(singleDesignator.getDesignator().obj);
+	}
+	public void visit(MultiDesignator multiDesignator)
+	{
+		m_MultiAssignmentDesignators.add(multiDesignator.getDesignatorWithEmpty().obj);
+	}
 	
 	//PROPAGATE TYPES IN EXPRESSIONS
 	//Factor
@@ -445,14 +535,28 @@ public class SemanticPass extends VisitorAdaptor {
 		positiveExpr.struct = positiveExpr.getExprInner().struct;
 	}
 
-	public void visit(Designator designator){
-		Obj obj = Tab.find(designator.getName());
+	public void visit(DesignatorBasic designatorBasic){
+		Obj obj = Tab.find(designatorBasic.getName());
 		if (obj == Tab.noObj) { 
-			report_error("Greska na liniji " + designator.getLine()+ " : ime "+designator.getName()+" nije deklarisano! ", null);
+			report_error("Greska na liniji " + designatorBasic.getLine()+ " : ime "+designatorBasic.getName()+" nije deklarisano! ", null);
 		}
-		designator.obj = obj;
+		designatorBasic.obj = obj;
 	}
 	
+	public void visit(DesignatorElem designatorElem){
+		Obj obj = Tab.find(designatorElem.getName());
+		if (obj == Tab.noObj) 
+		{ 
+			report_error("Greska na liniji " + designatorElem.getLine()+ " : ime "+designatorElem.getName()+" nije deklarisano! ", null);
+		}
+		if(obj.getType().getKind() == Struct.Array)
+		{
+			obj = new Obj(Obj.Elem, "Elem", obj.getType().getElemType());
+		}
+		designatorElem.obj = obj;
+	}
+	
+	//Is semantics correct
 	public boolean passed() {
 		return !errorDetected;
 	}

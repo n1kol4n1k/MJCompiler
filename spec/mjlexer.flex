@@ -81,14 +81,15 @@ import java_cup.runtime.Symbol;
 ","			{ return new_symbol(sym.COMMA, yytext()); }
 "="			{ return new_symbol(sym.EQUAL, yytext()); }
 
+"true" { return new_symbol(sym.BOOL, true); }
+"false" { return new_symbol(sym.BOOL, false); }
+
 <YYINITIAL> "//" 		     { yybegin(COMMENT); }
 <COMMENT> .      { yybegin(COMMENT); }
 <COMMENT> "\r\n" { yybegin(YYINITIAL); }
 
 [0-9]+  { return new_symbol(sym.NUMBER, new Integer (yytext())); }
 ([a-z]|[A-Z])[a-z|A-Z|0-9|_]* 	{return new_symbol (sym.IDENT, yytext()); }
-"true" { return new_symbol(sym.BOOL, true); }
-"false" { return new_symbol(sym.BOOL, false); }
 "'"[ -~]"'" { return new_symbol(sym.CHAR, new Character(yytext().charAt(1))); }
 
 . { System.err.println("Leksicka greska ("+yytext()+") u liniji "+(yyline+1)); }

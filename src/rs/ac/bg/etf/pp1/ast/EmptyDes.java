@@ -5,9 +5,9 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class NoFormParam extends FormPars {
+public class EmptyDes extends DesignatorWithEmpty {
 
-    public NoFormParam () {
+    public EmptyDes () {
     }
 
     public void accept(Visitor visitor) {
@@ -28,10 +28,10 @@ public class NoFormParam extends FormPars {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("NoFormParam(\n");
+        buffer.append("EmptyDes(\n");
 
         buffer.append(tab);
-        buffer.append(") [NoFormParam]");
+        buffer.append(") [EmptyDes]");
         return buffer.toString();
     }
 }

@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 4/1/2023 0:21:32
+// 4/1/2023 19:35:20
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -8,13 +8,13 @@ package rs.ac.bg.etf.pp1.ast;
 public class MultiDesignator extends DesignatorList {
 
     private DesignatorList DesignatorList;
-    private Designator Designator;
+    private DesignatorWithEmpty DesignatorWithEmpty;
 
-    public MultiDesignator (DesignatorList DesignatorList, Designator Designator) {
+    public MultiDesignator (DesignatorList DesignatorList, DesignatorWithEmpty DesignatorWithEmpty) {
         this.DesignatorList=DesignatorList;
         if(DesignatorList!=null) DesignatorList.setParent(this);
-        this.Designator=Designator;
-        if(Designator!=null) Designator.setParent(this);
+        this.DesignatorWithEmpty=DesignatorWithEmpty;
+        if(DesignatorWithEmpty!=null) DesignatorWithEmpty.setParent(this);
     }
 
     public DesignatorList getDesignatorList() {
@@ -25,12 +25,12 @@ public class MultiDesignator extends DesignatorList {
         this.DesignatorList=DesignatorList;
     }
 
-    public Designator getDesignator() {
-        return Designator;
+    public DesignatorWithEmpty getDesignatorWithEmpty() {
+        return DesignatorWithEmpty;
     }
 
-    public void setDesignator(Designator Designator) {
-        this.Designator=Designator;
+    public void setDesignatorWithEmpty(DesignatorWithEmpty DesignatorWithEmpty) {
+        this.DesignatorWithEmpty=DesignatorWithEmpty;
     }
 
     public void accept(Visitor visitor) {
@@ -39,18 +39,18 @@ public class MultiDesignator extends DesignatorList {
 
     public void childrenAccept(Visitor visitor) {
         if(DesignatorList!=null) DesignatorList.accept(visitor);
-        if(Designator!=null) Designator.accept(visitor);
+        if(DesignatorWithEmpty!=null) DesignatorWithEmpty.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
         if(DesignatorList!=null) DesignatorList.traverseTopDown(visitor);
-        if(Designator!=null) Designator.traverseTopDown(visitor);
+        if(DesignatorWithEmpty!=null) DesignatorWithEmpty.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
         if(DesignatorList!=null) DesignatorList.traverseBottomUp(visitor);
-        if(Designator!=null) Designator.traverseBottomUp(visitor);
+        if(DesignatorWithEmpty!=null) DesignatorWithEmpty.traverseBottomUp(visitor);
         accept(visitor);
     }
 
@@ -65,8 +65,8 @@ public class MultiDesignator extends DesignatorList {
             buffer.append(tab+"  null");
         buffer.append("\n");
 
-        if(Designator!=null)
-            buffer.append(Designator.toString("  "+tab));
+        if(DesignatorWithEmpty!=null)
+            buffer.append(DesignatorWithEmpty.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");

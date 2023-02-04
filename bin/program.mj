@@ -7,6 +7,11 @@ program MJProgram
 		return 2;
 	}
 	
+	int r(bool p)
+	{
+		return 3;
+	}
+	
 	void main()
 	char n, m, o;
 	{
@@ -14,5 +19,11 @@ program MJProgram
 		x = y + 2;
 		y = k() + 3;
 		print(y);
+		y = 4;
+		r(true);
+		y = 5;
+		chr(123);
+		r('s');
+		chr(false);
 	}
 }
