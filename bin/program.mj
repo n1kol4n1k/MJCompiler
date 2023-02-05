@@ -4,6 +4,11 @@ program MJProgram
 	const bool c2 = true;
 	const char c3 = 3;
 {
+	int dummyMethod(int a)
+	int b;
+	{
+		return 45;
+	}
 	
 	int k () int c; {
 		c = 1;

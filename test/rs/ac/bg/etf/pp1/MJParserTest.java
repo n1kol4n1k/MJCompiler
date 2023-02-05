@@ -56,13 +56,15 @@ public class MJParserTest {
 	        		objFile.delete();
 	        	
 	        	// Code generation...
-	        	/*CodeGenerator codeGenerator = new CodeGenerator();
+	        	CodeGenerator codeGenerator = new CodeGenerator();
+	        	codeGenerator.SetFormParmsMap(semanticCheck.GetFormParmsMap());
+	        	codeGenerator.SetBoolType(semanticCheck.boolType);
 	        	prog.traverseBottomUp(codeGenerator);
 	        	Code.dataSize = semanticCheck.nVars;
 	        	Code.mainPc = codeGenerator.getMainPc();
 	        	Code.write(new FileOutputStream(objFile));
 	        	log.info("Parsiranje uspesno zavrseno!");
-	        	*/
+
 	        }
 	        else {
 	        	log.error("Parsiranje NIJE uspesno zavrseno!");

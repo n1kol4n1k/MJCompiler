@@ -1,0 +1,12 @@
+program MJProgram
+int x;
+{
+	void main()
+	{
+		print(25);
+		print(24);
+		print(23);
+		return;
+		print(22);
+	}
+}

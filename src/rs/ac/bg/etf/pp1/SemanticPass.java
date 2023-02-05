@@ -82,7 +82,7 @@ import rs.ac.bg.etf.pp1.ast.NotEquals;
 public class SemanticPass extends VisitorAdaptor {
 	
 	//Symbol Table Expansion
-	Struct boolType = new Struct(Struct.Bool);
+	public Struct boolType = new Struct(Struct.Bool);
 	
 	//Helper structures
 	class VarInfo
@@ -119,6 +119,7 @@ public class SemanticPass extends VisitorAdaptor {
 	//Lists
 	ArrayList<VarInfo> m_innerVarList = new ArrayList<VarInfo>();
 	HashMap<Obj, ArrayList<Struct>> m_formParmsMap = new HashMap<Obj, ArrayList<Struct>>();
+	public HashMap<Obj, ArrayList<Struct>> GetFormParmsMap() { return m_formParmsMap; }
 	ArrayList<Struct> m_currentActualParamsTypes = new ArrayList<Struct>();
 	ArrayList<Obj> m_MultiAssignmentDesignators = new ArrayList<Obj>();
 	
