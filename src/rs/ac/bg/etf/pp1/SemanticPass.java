@@ -15,6 +15,12 @@ import rs.ac.bg.etf.pp1.ast.BreakStmt;
 import rs.ac.bg.etf.pp1.ast.CharConstIdentValue;
 import rs.ac.bg.etf.pp1.ast.ClassDecl;
 import rs.ac.bg.etf.pp1.ast.ClassDeclEnter;
+import rs.ac.bg.etf.pp1.ast.CondFactMultiExpr;
+import rs.ac.bg.etf.pp1.ast.CondFactSingleExpr;
+import rs.ac.bg.etf.pp1.ast.CondMultiTerms;
+import rs.ac.bg.etf.pp1.ast.CondSingleTerm;
+import rs.ac.bg.etf.pp1.ast.CondTermMultiFacts;
+import rs.ac.bg.etf.pp1.ast.CondTermSingleFact;
 import rs.ac.bg.etf.pp1.ast.ConstBool;
 import rs.ac.bg.etf.pp1.ast.ConstChar;
 import rs.ac.bg.etf.pp1.ast.ConstDecl;
@@ -22,18 +28,22 @@ import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.ConstType;
 import rs.ac.bg.etf.pp1.ast.ContinueStmt;
 import rs.ac.bg.etf.pp1.ast.Decrement;
-//import rs.ac.bg.etf.pp1.ast.Const;
 import rs.ac.bg.etf.pp1.ast.Designator;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
 import rs.ac.bg.etf.pp1.ast.DesignatorElem;
 import rs.ac.bg.etf.pp1.ast.EmptyDes;
+import rs.ac.bg.etf.pp1.ast.Equals;
 import rs.ac.bg.etf.pp1.ast.ExprBrackets;
 import rs.ac.bg.etf.pp1.ast.FactExpr;
 import rs.ac.bg.etf.pp1.ast.FactSingle;
 import rs.ac.bg.etf.pp1.ast.FormalParamDecl;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
+import rs.ac.bg.etf.pp1.ast.Greater;
+import rs.ac.bg.etf.pp1.ast.GreaterEquals;
 import rs.ac.bg.etf.pp1.ast.Increment;
 import rs.ac.bg.etf.pp1.ast.IntConstIdentValue;
+import rs.ac.bg.etf.pp1.ast.Less;
+import rs.ac.bg.etf.pp1.ast.LessEquals;
 import rs.ac.bg.etf.pp1.ast.MethodBasicTypeName;
 import rs.ac.bg.etf.pp1.ast.MethodDecl;
 import rs.ac.bg.etf.pp1.ast.MethodTypeName;
@@ -45,14 +55,12 @@ import rs.ac.bg.etf.pp1.ast.NewArray;
 import rs.ac.bg.etf.pp1.ast.NewSingle;
 import rs.ac.bg.etf.pp1.ast.PositiveExpr;
 import rs.ac.bg.etf.pp1.ast.PrintStmt;
-//import rs.ac.bg.etf.pp1.ast.ProcCall;
 import rs.ac.bg.etf.pp1.ast.ProgName;
 import rs.ac.bg.etf.pp1.ast.Program;
 import rs.ac.bg.etf.pp1.ast.ReadStmt;
 import rs.ac.bg.etf.pp1.ast.ReturnStmt;
 import rs.ac.bg.etf.pp1.ast.SingleDesignator;
 import rs.ac.bg.etf.pp1.ast.StatementFuncCall;
-//import rs.ac.bg.etf.pp1.ast.ReturnExpr;
 import rs.ac.bg.etf.pp1.ast.SyntaxNode;
 import rs.ac.bg.etf.pp1.ast.Term;
 import rs.ac.bg.etf.pp1.ast.TermExpr;
@@ -69,6 +77,7 @@ import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.Obj;
 import rs.etf.pp1.symboltable.concepts.Struct;
 import rs.ac.bg.etf.pp1.ast.NonEmptyDes;
+import rs.ac.bg.etf.pp1.ast.NotEquals;
 
 public class SemanticPass extends VisitorAdaptor {
 	
@@ -82,6 +91,16 @@ public class SemanticPass extends VisitorAdaptor {
 		public boolean m_IsArray;
 		public VarInfo(String name, boolean isArray) { m_Name=name; m_IsArray = isArray;}
 	}
+	enum RelopType
+	{
+		None, 
+		Equals, 
+		NotEquals, 
+		Greater, 
+		GreaterEquals, 
+		Less, 
+		LessEquals
+	}
 
 	boolean errorDetected = false;
 	Obj m_currentMethod = null;
@@ -92,6 +111,7 @@ public class SemanticPass extends VisitorAdaptor {
 	Obj m_MainMethod = null;
 	boolean m_IsClassScope = false;
 	int m_LoopLevel = 0;
+	RelopType m_Relop = RelopType.None; 
 	
 	
 	Logger log = Logger.getLogger(getClass());
@@ -595,13 +615,114 @@ public class SemanticPass extends VisitorAdaptor {
 	//(Minus) Expression
 	public void visit(NegativeExpr negativeExpr) 
 	{
+		if(negativeExpr.struct.equals(Tab.intType) == false)
+		{
+			report_error("Greska, negacija se moze raditi samo nad tipom int", negativeExpr);
+		}
 		negativeExpr.struct = negativeExpr.getExprInner().struct;
 	}
 	public void visit(PositiveExpr positiveExpr) 
 	{
 		positiveExpr.struct = positiveExpr.getExprInner().struct;
 	}
+	
+	//Conditions
+	//Save rel op
+	public void visit(Equals equals)
+	{
+		m_Relop = RelopType.Equals;
+	}
+	public void visit(NotEquals notEquals)
+	{
+		m_Relop = RelopType.NotEquals;
+	}
+	public void visit(Greater greater)
+	{
+		m_Relop = RelopType.Greater;
+	}
+	public void visit(GreaterEquals greaterEquals)
+	{
+		m_Relop = RelopType.GreaterEquals;
+	}
+	public void visit(Less less)
+	{
+		m_Relop = RelopType.Less;
+	}
+	public void visit(LessEquals lessEquals)
+	{
+		m_Relop = RelopType.LessEquals;
+	}
+	
+	//Condition operations
+	public void visit(CondFactSingleExpr condFactSingleExpr)
+	{
+		if(condFactSingleExpr.getExpr().struct.equals(boolType) == false)
+		{
+			report_error("Greska, operator u relacionom izrazu mora biti tipa bool", condFactSingleExpr);
+		}
+		condFactSingleExpr.struct = condFactSingleExpr.getExpr().struct;
+		m_Relop = RelopType.None;
+	}
+	public void visit(CondFactMultiExpr condFactMultiExpr)
+	{
+		if(m_Relop == RelopType.None)
+		{
+			report_error("Greska pri prepoznavanju relacione operacije", condFactMultiExpr);
+			return;
+		}
+		Struct factStruct = condFactMultiExpr.getCondFact().struct;
+		Struct exprStruct = condFactMultiExpr.getExpr().struct;
+		if(factStruct.compatibleWith(exprStruct) == false)
+		{
+			report_error("Greska: nekompatibilni tipovi u relacionom izrazu", condFactMultiExpr);
+		}
+		if((factStruct.getKind() == Struct.Array
+			|| factStruct.getKind() == Struct.Class)
+			&& (exprStruct.getKind() == Struct.Array
+			|| exprStruct.getKind() == Struct.Class))
+		{
+			if(m_Relop != RelopType.Equals && m_Relop != RelopType.NotEquals)
+			{
+				report_error("Greska: u relacionom izrazu sa tipovima niza ili klasa, dozvoljeni su samo operatori == i !=", condFactMultiExpr);
+			}
+		}
+		condFactMultiExpr.struct = factStruct;
+		m_Relop = RelopType.None;
+	}
+	public void visit(CondTermSingleFact condTermSingleFact)
+	{
+		if(condTermSingleFact.getCondFact().struct.equals(boolType) == false)
+		{
+			report_error("Greska, operator u relacionom izrazu mora biti tipa bool", condTermSingleFact);
+		}
+		condTermSingleFact.struct = condTermSingleFact.getCondFact().struct;
+	}
+	public void visit(CondTermMultiFacts condTermMultiFacts)
+	{
+		if(condTermMultiFacts.getCondFact().struct.equals(boolType) == false)
+		{
+			report_error("Greska, operator u relacionom izrazu mora biti tipa bool", condTermMultiFacts);
+		}
+		condTermMultiFacts.struct = condTermMultiFacts.getCondFact().struct;
+	}
+	public void visit(CondSingleTerm condTermSingleFact)
+	{
+		if(condTermSingleFact.getCondTerm().struct.equals(boolType) == false)
+		{
+			report_error("Greska, operator u relacionom izrazu mora biti tipa bool", condTermSingleFact);
+		}
+		condTermSingleFact.struct = condTermSingleFact.getCondTerm().struct;
+	}
+	public void visit(CondMultiTerms condMultiTerms)
+	{
+		if(condMultiTerms.getCondTerm().struct.equals(boolType) == false)
+		{
+			report_error("Greska, operator u relacionom izrazu mora biti tipa bool", condMultiTerms);
+		}
+		condMultiTerms.struct = condMultiTerms.getCondTerm().struct;
+	}
 
+	//Designators
 	public void visit(DesignatorBasic designatorBasic){
 		Obj obj = Tab.find(designatorBasic.getName());
 		if (obj == Tab.noObj) { 
@@ -611,15 +732,29 @@ public class SemanticPass extends VisitorAdaptor {
 	}
 	
 	public void visit(DesignatorElem designatorElem){
+		
+		if(designatorElem.getExpr().struct.equals(Tab.intType) == false)
+		{
+			report_error("Indeks niza " + designatorElem.getName() + " mora da bude tipa int ", designatorElem);
+		}
+		
 		Obj obj = Tab.find(designatorElem.getName());
 		if (obj == Tab.noObj) 
 		{ 
 			report_error("Greska na liniji " + designatorElem.getLine()+ " : ime "+designatorElem.getName()+" nije deklarisano! ", null);
 		}
-		if(obj.getType().getKind() == Struct.Array)
+		else
 		{
-			obj = new Obj(Obj.Elem, "Elem", obj.getType().getElemType());
+			if(obj.getType().getKind() == Struct.Array)
+			{
+				obj = new Obj(Obj.Elem, "Elem", obj.getType().getElemType());
+			}
+			else
+			{
+				report_error("Greska: " + designatorElem.getName() + " ne predstavlja niz ", designatorElem);
+			}
 		}
+		
 		designatorElem.obj = obj;
 	}
 	
@@ -669,7 +804,6 @@ public class SemanticPass extends VisitorAdaptor {
 			report_error("Greska: print funkcija prima samo osnovne tipove", printStmt);
 		}
 	}
-	
 	
 	//Is semantics correct
 	public boolean passed() {

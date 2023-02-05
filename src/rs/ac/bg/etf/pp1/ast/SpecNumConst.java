@@ -5,27 +5,20 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class Addop implements SyntaxNode {
+public class SpecNumConst extends NumConst {
 
-    private SyntaxNode parent;
-    private int line;
-    public Addop () {
+    private Integer numVal;
+
+    public SpecNumConst (Integer numVal) {
+        this.numVal=numVal;
     }
 
-    public SyntaxNode getParent() {
-        return parent;
+    public Integer getNumVal() {
+        return numVal;
     }
 
-    public void setParent(SyntaxNode parent) {
-        this.parent=parent;
-    }
-
-    public int getLine() {
-        return line;
-    }
-
-    public void setLine(int line) {
-        this.line=line;
+    public void setNumVal(Integer numVal) {
+        this.numVal=numVal;
     }
 
     public void accept(Visitor visitor) {
@@ -46,10 +39,13 @@ public class Addop implements SyntaxNode {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("Addop(\n");
+        buffer.append("SpecNumConst(\n");
+
+        buffer.append(" "+tab+numVal);
+        buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [Addop]");
+        buffer.append(") [SpecNumConst]");
         return buffer.toString();
     }
 }

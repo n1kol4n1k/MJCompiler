@@ -143,6 +143,8 @@ VarDeclInnerList ::= (VarDeclarationsInner) VarDeclInnerList COMMA VarIdent
 				
 VarIdent ::= (VarSingle) IDENT:vName
 				| (VarArray) IDENT:vName LSQUAREBR RSQUAREBR
+				| (VarError) error:err
+		  		{: parser.report_error("Izvrsen oporavak od greske pri deklarisanju promenljive u liniji " + errleft, null);  :}
 				;
 
 VarDeclList ::= (VarDeclarations) VarDeclList VarDecl
@@ -208,6 +210,7 @@ Statement ::= (DesignatorStmt) DesignatorStatement SEMI
 
 NumConst ::= (NoNumConst) /*epsilon*/
 				| (SpecNumConst) SEMI NUMBER:numVal
+				;
 
 WhileEnter ::= (WhileEnter) WHILE
 				;
@@ -217,8 +220,9 @@ ConditionStatements ::= (CndSingleStmt) Statement
 				| (CndNOStmts) SEMI 
 			  	;
 
-//TODO: error recovery
 DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e
+				| (AssignmentError) Designator:dest EQUAL error:err
+				{: parser.report_error("Izvrsen oporavak od greske pri dodeli u liniji " + errleft, null);  :}
 				| (Increment) Designator:dest DBLPLUS
 				| (Decrement) Designator:dest DBLMINUS
 				| (MultiAssignment) LSQUAREBR RSQUAREBR EQUAL Designator
@@ -244,8 +248,7 @@ Condition ::= (CondSingleTerm) CondTerm
 CondTerm ::= (CondTermSingleFact) CondFact
 				| (CondTermMultiFacts) CondTerm DBLAMP CondFact
 				;
-				
-//TODO: convert expressions to bool?				
+								
 CondFact ::= (CondFactSingleExpr) Expr 
 				| (CondFactMultiExpr) CondFact Relop Expr
 			  	;

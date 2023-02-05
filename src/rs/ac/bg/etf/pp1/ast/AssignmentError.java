@@ -5,11 +5,11 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class ReadStmt extends Statement {
+public class AssignmentError extends DesignatorStatement {
 
     private Designator Designator;
 
-    public ReadStmt (Designator Designator) {
+    public AssignmentError (Designator Designator) {
         this.Designator=Designator;
         if(Designator!=null) Designator.setParent(this);
     }
@@ -43,7 +43,7 @@ public class ReadStmt extends Statement {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("ReadStmt(\n");
+        buffer.append("AssignmentError(\n");
 
         if(Designator!=null)
             buffer.append(Designator.toString("  "+tab));
@@ -52,7 +52,7 @@ public class ReadStmt extends Statement {
         buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [ReadStmt]");
+        buffer.append(") [AssignmentError]");
         return buffer.toString();
     }
 }
