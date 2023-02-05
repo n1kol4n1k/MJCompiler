@@ -208,8 +208,8 @@ Statement ::= (DesignatorStmt) DesignatorStatement SEMI
 			  (PrintStmt) PRINT LPAREN Expr NumConst RPAREN SEMI
 			  ;
 
-NumConst ::= (NoNumConst) /*epsilon*/
-				| (SpecNumConst) SEMI NUMBER:numVal
+NumConst ::= (SpecNumConst) COMMA NUMBER:repeatVal
+				| (NoNumConst) /*epsilon*/
 				;
 
 WhileEnter ::= (WhileEnter) WHILE

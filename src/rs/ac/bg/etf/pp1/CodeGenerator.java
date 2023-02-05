@@ -115,28 +115,28 @@ public class CodeGenerator extends VisitorAdaptor {
 		if(printStmt.getExpr().struct == Tab.intType || printStmt.getExpr().struct == boolType)
 		{
 			Code.loadConst(5);
-			Code.put(Code.print);
 			for(int i = 1; i < m_NumOfPrints; i++)
 			{
 				Code.put(Code.dup2);
 				Code.put(Code.print);
 			}
+			Code.put(Code.print);
 		}
 		else
 		{
 			Code.loadConst(1);
-			Code.put(Code.bprint);
 			for(int i = 1; i < m_NumOfPrints; i++)
 			{
 				Code.put(Code.dup2);
 				Code.put(Code.bprint);
 			}
+			Code.put(Code.bprint);
 		}
 		m_NumOfPrints = 1;
 	}
 	public void visit(SpecNumConst specNumConst)
 	{
-		m_NumOfPrints = specNumConst.getNumVal();
+		m_NumOfPrints = specNumConst.getRepeatVal();
 	}
 	
 	//Aritmetics

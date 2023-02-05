@@ -226,8 +226,8 @@ Statement ::= (DesignatorStmt) DesignatorStatement:D1 SEMI {: RESULT=new Designa
 			  (PrintStmt) PRINT LPAREN Expr:E1 NumConst:N2 RPAREN SEMI {: RESULT=new PrintStmt(E1, N2); RESULT.setLine(E1left); :}
 			  ;
 
-NumConst ::= (NoNumConst) {: RESULT=new NoNumConst(); :} /*epsilon*/
-				| (SpecNumConst) SEMI NUMBER:numVal {: RESULT=new SpecNumConst(numVal); RESULT.setLine(numValleft); :}
+NumConst ::= (SpecNumConst) COMMA NUMBER:repeatVal {: RESULT=new SpecNumConst(repeatVal); RESULT.setLine(repeatValleft); :}
+				| (NoNumConst) {: RESULT=new NoNumConst(); :} /*epsilon*/
 				;
 
 WhileEnter ::= (WhileEnter) WHILE {: RESULT=new WhileEnter(); :}
