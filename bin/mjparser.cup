@@ -94,6 +94,9 @@ nonterminal rs.etf.pp1.symboltable.concepts.Obj DesignatorWithEmpty;
 //Statements
 nonterminal Statement, ConditionStatements;
 
+//Loop
+nonterminal WhileEnter;
+
 //Precedences
 precedence left ELSE;
 
@@ -188,7 +191,7 @@ Statement ::= (DesignatorStmt) DesignatorStatement SEMI
 			  |
 			  (IfElseStmt) IF LPAREN Condition RPAREN ConditionStatements ELSE ConditionStatements
 			  |
-			  (WhileStmt) WHILE LPAREN Condition RPAREN ConditionStatements 
+			  (WhileStmt) WhileEnter LPAREN Condition RPAREN ConditionStatements 
 			  |
 			  (BreakStmt) BREAK SEMI
 			  |
@@ -202,6 +205,9 @@ Statement ::= (DesignatorStmt) DesignatorStatement SEMI
 			  |
 			  (PrintStmt) PRINT LPAREN Expr RPAREN SEMI
 			  ;
+
+WhileEnter ::= (WhileEnter) WHILE
+				;
 
 ConditionStatements ::= (CndSingleStmt) Statement
 			  	| (CndMultipleStmts) LBRACE StatementList RBRACE

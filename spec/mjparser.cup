@@ -88,11 +88,14 @@ nonterminal Relop, Addop, Mulop;
 nonterminal ConstIdentValue;
 
 //Options
-nonterminal Inheritance, FormPars, ActualPars;
+nonterminal Inheritance, FormPars, ActualPars, NumConst;
 nonterminal rs.etf.pp1.symboltable.concepts.Obj DesignatorWithEmpty;
 
 //Statements
 nonterminal Statement, ConditionStatements;
+
+//Loop
+nonterminal WhileEnter;
 
 //Precedences
 precedence left ELSE;
@@ -188,7 +191,7 @@ Statement ::= (DesignatorStmt) DesignatorStatement SEMI
 			  |
 			  (IfElseStmt) IF LPAREN Condition RPAREN ConditionStatements ELSE ConditionStatements
 			  |
-			  (WhileStmt) WHILE LPAREN Condition RPAREN ConditionStatements 
+			  (WhileStmt) WhileEnter LPAREN Condition RPAREN ConditionStatements 
 			  |
 			  (BreakStmt) BREAK SEMI
 			  |
@@ -200,8 +203,14 @@ Statement ::= (DesignatorStmt) DesignatorStatement SEMI
 			  | 
 			  (ReadStmt) READ LPAREN Designator RPAREN SEMI
 			  |
-			  (PrintStmt) PRINT LPAREN Expr RPAREN SEMI
+			  (PrintStmt) PRINT LPAREN Expr NumConst RPAREN SEMI
 			  ;
+
+NumConst ::= (NoNumConst) /*epsilon*/
+				| (SpecNumConst) SEMI NUMBER:numVal
+
+WhileEnter ::= (WhileEnter) WHILE
+				;
 
 ConditionStatements ::= (CndSingleStmt) Statement
 			  	| (CndMultipleStmts) LBRACE StatementList RBRACE

@@ -6,10 +6,12 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import rs.ac.bg.etf.pp1.ast.ActualParam;
+import rs.ac.bg.etf.pp1.ast.ActualParams;
 import rs.ac.bg.etf.pp1.ast.AddExpr;
 import rs.ac.bg.etf.pp1.ast.Assignment;
 import rs.ac.bg.etf.pp1.ast.BlankReturnStmt;
 import rs.ac.bg.etf.pp1.ast.BoolConstIdentValue;
+import rs.ac.bg.etf.pp1.ast.BreakStmt;
 import rs.ac.bg.etf.pp1.ast.CharConstIdentValue;
 import rs.ac.bg.etf.pp1.ast.ClassDecl;
 import rs.ac.bg.etf.pp1.ast.ClassDeclEnter;
@@ -18,6 +20,8 @@ import rs.ac.bg.etf.pp1.ast.ConstChar;
 import rs.ac.bg.etf.pp1.ast.ConstDecl;
 import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.ConstType;
+import rs.ac.bg.etf.pp1.ast.ContinueStmt;
+import rs.ac.bg.etf.pp1.ast.Decrement;
 //import rs.ac.bg.etf.pp1.ast.Const;
 import rs.ac.bg.etf.pp1.ast.Designator;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
@@ -28,6 +32,7 @@ import rs.ac.bg.etf.pp1.ast.FactExpr;
 import rs.ac.bg.etf.pp1.ast.FactSingle;
 import rs.ac.bg.etf.pp1.ast.FormalParamDecl;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
+import rs.ac.bg.etf.pp1.ast.Increment;
 import rs.ac.bg.etf.pp1.ast.IntConstIdentValue;
 import rs.ac.bg.etf.pp1.ast.MethodBasicTypeName;
 import rs.ac.bg.etf.pp1.ast.MethodDecl;
@@ -43,6 +48,7 @@ import rs.ac.bg.etf.pp1.ast.PrintStmt;
 //import rs.ac.bg.etf.pp1.ast.ProcCall;
 import rs.ac.bg.etf.pp1.ast.ProgName;
 import rs.ac.bg.etf.pp1.ast.Program;
+import rs.ac.bg.etf.pp1.ast.ReadStmt;
 import rs.ac.bg.etf.pp1.ast.ReturnStmt;
 import rs.ac.bg.etf.pp1.ast.SingleDesignator;
 import rs.ac.bg.etf.pp1.ast.StatementFuncCall;
@@ -57,6 +63,8 @@ import rs.ac.bg.etf.pp1.ast.VarDecl;
 import rs.ac.bg.etf.pp1.ast.VarIdent;
 import rs.ac.bg.etf.pp1.ast.VarSingle;
 import rs.ac.bg.etf.pp1.ast.VisitorAdaptor;
+import rs.ac.bg.etf.pp1.ast.WhileEnter;
+import rs.ac.bg.etf.pp1.ast.WhileStmt;
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.Obj;
 import rs.etf.pp1.symboltable.concepts.Struct;
@@ -83,8 +91,9 @@ public class SemanticPass extends VisitorAdaptor {
 	Struct m_CurrentConstType = null;
 	Obj m_MainMethod = null;
 	boolean m_IsClassScope = false;
-	boolean m_IsArray = false;
-
+	int m_LoopLevel = 0;
+	
+	
 	Logger log = Logger.getLogger(getClass());
 
 	//Lists
@@ -330,17 +339,23 @@ public class SemanticPass extends VisitorAdaptor {
 	{
 		m_currentActualParamsTypes.add(actualParam.getExpr().struct);
 	}
+	public void visit(ActualParams actualParams)
+	{
+		m_currentActualParamsTypes.add(actualParams.getExpr().struct);
+	}
 	public void visit(FuncCall funcCall)
 	{
 		Obj funcObj = funcCall.getDesignator().obj;
 		CheckFuncArgs(funcObj, funcCall);
 		m_currentActualParamsTypes.clear();
+		report_info("Pozvana funkcija " + funcObj.getName() + " kao deo izraza", funcCall);
 		PropagateFuncType(funcCall);
 	}
 	public void visit(StatementFuncCall statementFuncCall)
 	{
 		Obj funcObj = statementFuncCall.getDesignator().obj;
 		CheckFuncArgs(funcObj, statementFuncCall);
+		report_info("Pozvana funkcija " + funcObj.getName() + " kao statement", statementFuncCall);
 		m_currentActualParamsTypes.clear();
 	}
 	
@@ -363,6 +378,7 @@ public class SemanticPass extends VisitorAdaptor {
 				report_error("Greska: pogresan tip parametara u funkciji len", nodeInfo);
 				return;
 			}
+			return;
 		}
 		if(funcObj.getKind() != Obj.Meth)
 		{
@@ -373,7 +389,7 @@ public class SemanticPass extends VisitorAdaptor {
 			ArrayList<Struct> formParams = m_formParmsMap.get(funcObj);
 			if(formParams.size() != m_currentActualParamsTypes.size())
 			{
-				report_error("Greska: pogresan broj parametara u funkciji " + funcObj.getName(), nodeInfo);
+				report_error("Greska: pogresan broj parametara u funkciji " + funcObj.getName() + ". Expected: " + formParams.size() + " Got: " + m_currentActualParamsTypes.size(), nodeInfo);
 			}
 			else
 			{
@@ -385,8 +401,7 @@ public class SemanticPass extends VisitorAdaptor {
 					Struct actStruct = actParamIt.next();
 					if(formStruct.compatibleWith(actStruct) == false)
 					{
-						report_error("Greska: pogresan tip parametara u funkciji " + funcObj.getName(), nodeInfo);
-						break;
+						report_error("Greska: pogresan tip parametra u funkciji " + funcObj.getName(), nodeInfo);
 					}
 				}
 			}
@@ -396,17 +411,64 @@ public class SemanticPass extends VisitorAdaptor {
 	//Assignment
 	public void visit(Assignment assignment) 
 	{
+		int desKind = assignment.getDesignator().obj.getKind();
+		if(desKind != Obj.Var && desKind != Obj.Elem && desKind != Obj.Fld)
+		{
+			report_error("Greska: Pri dodeli, ime " +  assignment.getDesignator().obj.getName() + 
+					" mora biti promenljiva, element niza ili polje.", assignment);
+		}
 		if (!assignment.getExpr().struct.assignableTo(assignment.getDesignator().obj.getType()))
 		{
 			report_error("Greska na liniji " + assignment.getLine() + " : " + " nekompatibilni tipovi u dodeli vrednosti ", null);
 		}
 		report_info("Dodela vrednosti " + assignment.getDesignator().obj.getName(), assignment);
 	}
+	
+	//Increment
+	public void visit(Increment increment)
+	{
+		int desKind = increment.getDesignator().obj.getKind();
+		if(desKind != Obj.Var && desKind != Obj.Elem && desKind != Obj.Fld)
+		{
+			report_error("Greska: Pri inkrementu, ime " +  increment.getDesignator().obj.getName() + 
+					" mora biti promenljiva, element niza ili polje.", increment);
+		}
+		if (increment.getDesignator().obj.getType() != Tab.intType)
+		{
+			report_error("Greska na liniji " + increment.getLine() + " : " + " inkrement se moze izvrsiti samo nad tipom int ", null);
+		}
+		
+		report_info("Increment " + increment.getDesignator().obj.getName(), increment);
+	}
+	
+	//Decrement
+	public void visit(Decrement decrement)
+	{
+		int desKind = decrement.getDesignator().obj.getKind();
+		if(desKind != Obj.Var && desKind != Obj.Elem && desKind != Obj.Fld)
+		{
+			report_error("Greska: Pri inkrementu, ime " +  decrement.getDesignator().obj.getName() + 
+					" mora biti promenljiva, element niza ili polje.", decrement);
+		}
+		if (decrement.getDesignator().obj.getType() != Tab.intType)
+		{
+			report_error("Greska na liniji " + decrement.getLine() + " : " + " inkrement se moze izvrsiti samo nad tipom int ", null);
+		}
+		
+		report_info("Decrement " + decrement.getDesignator().obj.getName(), decrement);
+	}
 
 	//MultiAssignment 0_0
 	//Exiting multi assignment
 	public void visit(MultiAssignment multiAssignment)
 	{
+		Obj rightDesignator = multiAssignment.getDesignator().obj;
+		if(rightDesignator.getType().getKind() != Struct.Array)
+		{
+			report_error("Greska: U visestrukoj dodeli, sa desne strane mora biti niz", multiAssignment);
+			
+		}
+		
 		for(Obj designator : m_MultiAssignmentDesignators)
 		{
 			//can be null, when there is no designator
@@ -418,14 +480,19 @@ public class SemanticPass extends VisitorAdaptor {
 					report_error("Greska: U visestrukoj dodeli, ime " + designator.getName() + 
 					" mora biti promenljiva, element niza ili polje.", multiAssignment);
 				}
+				
+				Struct rightElemType = rightDesignator.getType().getElemType();
+				if(rightElemType != null)
+				{
+					if(rightElemType.compatibleWith(designator.getType()) == false)
+					{
+						report_error("Greska: U visestrukoj dodeli, ime " + designator.getName() + 
+								" mora biti istog tipa kao element niza sa desne strane", multiAssignment);
+					}
+				}
 			}
 		}
 		
-		Obj rightDesignator = multiAssignment.getDesignator().obj;
-		if(rightDesignator.getType().getKind() != Struct.Array)
-		{
-			report_error("Greska: U visestrukoj dodeli, sa desne strane mora biti niz", multiAssignment);
-		}
 		/* REPORT IN RUNTIME, when we know array size
 		else
 		{
@@ -556,15 +623,74 @@ public class SemanticPass extends VisitorAdaptor {
 		designatorElem.obj = obj;
 	}
 	
+	//Loops
+	public void visit(WhileEnter whileEnter)
+	{
+		m_LoopLevel++;
+	}
+	public void visit(WhileStmt whileStmt)
+	{
+		m_LoopLevel--;
+	}
+	public void visit(BreakStmt breakStmt)
+	{
+		if(m_LoopLevel == 0)
+		{
+			report_error("Greska: break se moze iskoristiti samo unutar petlje!", breakStmt);
+		}
+	}
+	public void visit(ContinueStmt continueStmt)
+	{
+		if(m_LoopLevel == 0)
+		{
+			report_error("Greska: continue se moze iskoristiti samo unutar petlje!", continueStmt);
+		}
+	}
+	
+	//Read
+	public void visit(ReadStmt readStmt)
+	{
+		Obj des = readStmt.getDesignator().obj;
+		if(des.getKind() != Obj.Var && des.getKind() != Obj.Elem && des.getKind() != Obj.Fld)
+		{
+			report_error("Greska: read funkcija prima samo promenljive, element niza ili polje klase", readStmt);
+		}
+		if(IsPrimitiveType(des) == false)
+		{
+			report_error("Greska: read funkcija prima samo osnovne tipove", readStmt);
+		}
+	}
+	//Print
+	public void visit(PrintStmt printStmt)
+	{
+		Struct expr = printStmt.getExpr().struct;
+		if(IsPrimitiveType(expr) == false)
+		{
+			report_error("Greska: print funkcija prima samo osnovne tipove", printStmt);
+		}
+	}
+	
+	
 	//Is semantics correct
 	public boolean passed() {
 		return !errorDetected;
 	}
 	
 	//Helpers
-	private void AddVarInfo(String name, boolean isArray)
+	void AddVarInfo(String name, boolean isArray)
 	{
 		m_innerVarList.add(new VarInfo(name, isArray));
+	}
+	boolean IsPrimitiveType(Struct str)
+	{
+		return str == Tab.intType ||
+				str == Tab.charType ||
+				str == boolType;
+	}
+	boolean IsPrimitiveType(Obj obj)
+	{
+		Struct type = obj.getType();
+		return IsPrimitiveType(type);
 	}
 	
 	//Reports

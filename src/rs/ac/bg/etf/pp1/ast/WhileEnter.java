@@ -5,9 +5,27 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class NoActuals extends ActualPars {
+public class WhileEnter implements SyntaxNode {
 
-    public NoActuals () {
+    private SyntaxNode parent;
+    private int line;
+    public WhileEnter () {
+    }
+
+    public SyntaxNode getParent() {
+        return parent;
+    }
+
+    public void setParent(SyntaxNode parent) {
+        this.parent=parent;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public void setLine(int line) {
+        this.line=line;
     }
 
     public void accept(Visitor visitor) {
@@ -28,10 +46,10 @@ public class NoActuals extends ActualPars {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("NoActuals(\n");
+        buffer.append("WhileEnter(\n");
 
         buffer.append(tab);
-        buffer.append(") [NoActuals]");
+        buffer.append(") [WhileEnter]");
         return buffer.toString();
     }
 }
