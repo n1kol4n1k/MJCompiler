@@ -354,12 +354,14 @@ public class CodeGenerator extends VisitorAdaptor {
 	{
 		Code.loadConst(1);
 		Code.put(Code.add);
+		Code.store(increment.getDesignator().obj);
 	}
 	//Decrement
 	public void visit(Decrement decrement)
 	{
 		Code.loadConst(1);
 		Code.put(Code.sub);
+		Code.store(decrement.getDesignator().obj);
 	}
 	
 	//MultiAssignment 0_0
