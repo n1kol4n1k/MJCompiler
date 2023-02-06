@@ -255,10 +255,10 @@ public class CodeGenerator extends VisitorAdaptor {
 		switch(m_Addop)
 		{
 		case Addop : 
-			Code.put(Code.mul);
+			Code.put(Code.add);
 			break;
 		case Minusop : 
-			Code.put(Code.div);
+			Code.put(Code.sub);
 			break;
 		default:
 		}

@@ -7,6 +7,6 @@ program MJProgram
 		print('n');
 		print(false, 2);
 		a = 50;
-		print(a);
+		print(2*a + 25);
 	}
 }
