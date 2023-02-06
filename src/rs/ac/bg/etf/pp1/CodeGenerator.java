@@ -9,10 +9,12 @@ import rs.ac.bg.etf.pp1.ast.ClassDeclEnter;
 import rs.ac.bg.etf.pp1.ast.ConstBool;
 import rs.ac.bg.etf.pp1.ast.ConstChar;
 import rs.ac.bg.etf.pp1.ast.ConstNum;
+import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.Designator;
 import rs.ac.bg.etf.pp1.ast.Divop;
 import rs.ac.bg.etf.pp1.ast.FactExpr;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
+import rs.ac.bg.etf.pp1.ast.Increment;
 import rs.ac.bg.etf.pp1.ast.MethodBasicTypeName;
 import rs.ac.bg.etf.pp1.ast.MethodDecl;
 import rs.ac.bg.etf.pp1.ast.MethodTypeName;
@@ -21,10 +23,10 @@ import rs.ac.bg.etf.pp1.ast.Minusop;
 import rs.ac.bg.etf.pp1.ast.Mulop;
 import rs.ac.bg.etf.pp1.ast.NegativeExpr;
 import rs.ac.bg.etf.pp1.ast.NewArray;
-import rs.ac.bg.etf.pp1.ast.NewSingle;
 import rs.ac.bg.etf.pp1.ast.Percop;
 import rs.ac.bg.etf.pp1.ast.SpecNumConst;
 import rs.ac.bg.etf.pp1.ast.PrintStmt;
+import rs.ac.bg.etf.pp1.ast.ReadStmt;
 import rs.ac.bg.etf.pp1.ast.ReturnStmt;
 import rs.ac.bg.etf.pp1.ast.SyntaxNode;
 import rs.ac.bg.etf.pp1.ast.Var;
@@ -164,6 +166,20 @@ public class CodeGenerator extends VisitorAdaptor {
 		m_NumOfPrints = specNumConst.getRepeatVal();
 	}
 	
+	//Read statement
+	public void visit(ReadStmt readStmt)
+	{
+		Struct desType = readStmt.getDesignator().obj.getType();
+		if(desType == Tab.intType || desType == boolType)
+		{
+			Code.put(Code.read);
+		}
+		else
+		{
+			Code.put(Code.bread);
+		}
+	}
+	
 	//Aritmetics
 	public void visit(ConstNum constNum)
 	{
@@ -267,5 +283,18 @@ public class CodeGenerator extends VisitorAdaptor {
 	public void visit(NegativeExpr negativeExpr)
 	{
 		Code.put(Code.neg);
+	}
+	
+	//Increment
+	public void visit(Increment increment)
+	{
+		Code.loadConst(1);
+		Code.put(Code.add);
+	}
+	//Decrement
+	public void visit(Decrement decrement)
+	{
+		Code.loadConst(1);
+		Code.put(Code.sub);
 	}
 }

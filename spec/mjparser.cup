@@ -225,7 +225,7 @@ DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e
 				{: parser.report_error("Izvrsen oporavak od greske pri dodeli u liniji " + errleft, null);  :}
 				| (Increment) Designator:dest DBLPLUS
 				| (Decrement) Designator:dest DBLMINUS
-				| (MultiAssignment) LSQUAREBR RSQUAREBR EQUAL Designator
+				| (MultiAssignment) LSQUAREBR DesignatorList RSQUAREBR EQUAL Designator
 				| (StatementFuncCall) Designator:dest LPAREN ActualPars RPAREN
 				;
 

@@ -243,7 +243,7 @@ DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e {: RESULT=new 
 				{: parser.report_error("Izvrsen oporavak od greske pri dodeli u liniji " + errleft, null);  :} {: RESULT=new AssignmentError(dest); RESULT.setLine(destleft); :}
 				| (Increment) Designator:dest DBLPLUS {: RESULT=new Increment(dest); RESULT.setLine(destleft); :}
 				| (Decrement) Designator:dest DBLMINUS {: RESULT=new Decrement(dest); RESULT.setLine(destleft); :}
-				| (MultiAssignment) LSQUAREBR RSQUAREBR EQUAL Designator:D1 {: RESULT=new MultiAssignment(D1); RESULT.setLine(D1left); :}
+				| (MultiAssignment) LSQUAREBR DesignatorList:D1 RSQUAREBR EQUAL Designator:D2 {: RESULT=new MultiAssignment(D1, D2); RESULT.setLine(D1left); :}
 				| (StatementFuncCall) Designator:dest LPAREN ActualPars:A1 RPAREN {: RESULT=new StatementFuncCall(dest, A1); RESULT.setLine(destleft); :}
 				;
 

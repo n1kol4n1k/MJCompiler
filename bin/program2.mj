@@ -1,8 +1,12 @@
 program MJProgram
-int x;
 {
 	void main()
+	int a;
 	{
 		print(25, 3);
+		print('n');
+		print(false, 2);
+		a = 50;
+		print(-(2*a + 25));
 	}
 }
