@@ -11,7 +11,9 @@ import rs.ac.bg.etf.pp1.ast.ConstChar;
 import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.Designator;
+import rs.ac.bg.etf.pp1.ast.DesignatorWithEmpty;
 import rs.ac.bg.etf.pp1.ast.Divop;
+import rs.ac.bg.etf.pp1.ast.EmptyDes;
 import rs.ac.bg.etf.pp1.ast.FactExpr;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
 import rs.ac.bg.etf.pp1.ast.Increment;
@@ -21,13 +23,18 @@ import rs.ac.bg.etf.pp1.ast.MethodTypeName;
 import rs.ac.bg.etf.pp1.ast.MethodVoidName;
 import rs.ac.bg.etf.pp1.ast.Minusop;
 import rs.ac.bg.etf.pp1.ast.Mulop;
+import rs.ac.bg.etf.pp1.ast.MultiAssignment;
+import rs.ac.bg.etf.pp1.ast.MultiDesignator;
 import rs.ac.bg.etf.pp1.ast.NegativeExpr;
 import rs.ac.bg.etf.pp1.ast.NewArray;
+import rs.ac.bg.etf.pp1.ast.NonEmptyDes;
 import rs.ac.bg.etf.pp1.ast.Percop;
 import rs.ac.bg.etf.pp1.ast.SpecNumConst;
+import rs.ac.bg.etf.pp1.ast.StatementFuncCall;
 import rs.ac.bg.etf.pp1.ast.PrintStmt;
 import rs.ac.bg.etf.pp1.ast.ReadStmt;
 import rs.ac.bg.etf.pp1.ast.ReturnStmt;
+import rs.ac.bg.etf.pp1.ast.SingleDesignator;
 import rs.ac.bg.etf.pp1.ast.SyntaxNode;
 import rs.ac.bg.etf.pp1.ast.Var;
 import rs.ac.bg.etf.pp1.ast.VisitorAdaptor;
@@ -50,6 +57,16 @@ public class CodeGenerator extends VisitorAdaptor {
 	
 	boolean m_IsClassScope = false;
 	int m_NumOfPrints = 1;
+	
+	//For multi assignment
+	class AssignInfo
+	{
+		public Obj des;
+		public int pos;
+		public AssignInfo(Obj o, int p) { des=o; pos = p; }
+	}
+	ArrayList<AssignInfo> m_MultiAssignmentInfos = new ArrayList<AssignInfo>();
+	int m_totalElemInMultiAssignment = 0;
 	
 	//Enums for operations
 	enum MulopType
@@ -132,7 +149,13 @@ public class CodeGenerator extends VisitorAdaptor {
 	
 	public void visit(Designator Designator) {
 		SyntaxNode parent = Designator.getParent();
-		if (Assignment.class != parent.getClass() && FuncCall.class != parent.getClass()) {
+		if (	Assignment.class != parent.getClass() && 
+				FuncCall.class != parent.getClass() && 
+				StatementFuncCall.class != parent.getClass() &&
+				SingleDesignator.class != parent.getClass() &&
+				DesignatorWithEmpty.class != parent.getClass() &&
+				MultiAssignment.class != parent.getClass()) 
+		{
 			Code.load(Designator.obj);
 		}
 	}
@@ -297,4 +320,45 @@ public class CodeGenerator extends VisitorAdaptor {
 		Code.loadConst(1);
 		Code.put(Code.sub);
 	}
+	
+	//MultiAssignment 0_0
+	public void visit(MultiAssignment multiAssignment)
+	{
+		Obj rightDesignator = multiAssignment.getDesignator().obj;
+		int instrCode = Code.aload;
+		if(rightDesignator.getType().getElemType() == Tab.charType)
+		{
+			instrCode = Code.baload;
+		}
+		for(AssignInfo aInfo : m_MultiAssignmentInfos)
+		{
+			Code.load(rightDesignator);
+			Code.loadConst(aInfo.pos);
+			Code.put(instrCode);
+			Code.store(aInfo.des);
+		}
+
+		m_MultiAssignmentInfos.clear();
+		m_totalElemInMultiAssignment = 0;
+	}
+	//Count actual designators, including blanks, store info
+	public void visit(EmptyDes emptyDes)
+	{
+		m_totalElemInMultiAssignment++;
+	}
+	public void visit(NonEmptyDes nonEmptyDes)
+	{
+		m_MultiAssignmentInfos.add(
+				new AssignInfo(nonEmptyDes.getDesignator().obj,
+						m_totalElemInMultiAssignment));
+		m_totalElemInMultiAssignment++;
+	}
+	public void visit(SingleDesignator singleDesignator)
+	{
+		m_MultiAssignmentInfos.add(
+				new AssignInfo(singleDesignator.getDesignator().obj,
+						m_totalElemInMultiAssignment));
+		m_totalElemInMultiAssignment++;
+	}
+
 }
