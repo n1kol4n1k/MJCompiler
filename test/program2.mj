@@ -1,9 +1,12 @@
 program MJProgram
 {
 	void main()
+	int a;
 	{
 		print(25, 3);
 		print('n');
 		print(false, 2);
+		a = 50;
+		print(a);
 	}
 }

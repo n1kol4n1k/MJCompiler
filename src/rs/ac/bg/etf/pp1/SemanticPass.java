@@ -579,7 +579,7 @@ public class SemanticPass extends VisitorAdaptor {
 	}
 	public void visit(NewSingle newSingle)
 	{
-		newSingle.struct = newSingle.getType().struct;
+		report_error("Greska: Verzija MJ ne podrzava klase! ", newSingle);
 	}
 	//Term
 	public void visit(FactSingle factSingle) 

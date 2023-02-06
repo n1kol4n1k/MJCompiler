@@ -1,5 +1,7 @@
 package rs.ac.bg.etf.pp1;
 
+import rs.ac.bg.etf.pp1.ast.AddExpr;
+import rs.ac.bg.etf.pp1.ast.Addop;
 import rs.ac.bg.etf.pp1.ast.Assignment;
 import rs.ac.bg.etf.pp1.ast.BlankReturnStmt;
 import rs.ac.bg.etf.pp1.ast.ClassDecl;
@@ -8,11 +10,19 @@ import rs.ac.bg.etf.pp1.ast.ConstBool;
 import rs.ac.bg.etf.pp1.ast.ConstChar;
 import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.Designator;
+import rs.ac.bg.etf.pp1.ast.Divop;
+import rs.ac.bg.etf.pp1.ast.FactExpr;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
 import rs.ac.bg.etf.pp1.ast.MethodBasicTypeName;
 import rs.ac.bg.etf.pp1.ast.MethodDecl;
 import rs.ac.bg.etf.pp1.ast.MethodTypeName;
 import rs.ac.bg.etf.pp1.ast.MethodVoidName;
+import rs.ac.bg.etf.pp1.ast.Minusop;
+import rs.ac.bg.etf.pp1.ast.Mulop;
+import rs.ac.bg.etf.pp1.ast.NegativeExpr;
+import rs.ac.bg.etf.pp1.ast.NewArray;
+import rs.ac.bg.etf.pp1.ast.NewSingle;
+import rs.ac.bg.etf.pp1.ast.Percop;
 import rs.ac.bg.etf.pp1.ast.SpecNumConst;
 import rs.ac.bg.etf.pp1.ast.PrintStmt;
 import rs.ac.bg.etf.pp1.ast.ReturnStmt;
@@ -38,6 +48,24 @@ public class CodeGenerator extends VisitorAdaptor {
 	
 	boolean m_IsClassScope = false;
 	int m_NumOfPrints = 1;
+	
+	//Enums for operations
+	enum MulopType
+	{
+		None, 
+		Mulop, 
+		Divop, 
+		Percop
+	}
+	enum AddopType
+	{
+		None, 
+		Addop, 
+		Minusop
+	}
+	MulopType m_Mulop = MulopType.None;
+	AddopType m_Addop = AddopType.None;
+	
 	
 	//Classes scope detection, to ignore generating code for it
 	public void visit(ClassDeclEnter classDeclEnter)
@@ -77,22 +105,26 @@ public class CodeGenerator extends VisitorAdaptor {
 		Code.put(totalParams);
 	}
 	
-	public void visit(ReturnStmt returnStmt) {
+	public void visit(ReturnStmt returnStmt) 
+	{
 		Code.put(Code.exit);
 		Code.put(Code.return_);
 	}
 	
-	public void visit(BlankReturnStmt blankReturnStmt) {
+	public void visit(BlankReturnStmt blankReturnStmt)
+	{
 		Code.put(Code.exit);
 		Code.put(Code.return_);
 	}
 	
-	public void visit(MethodDecl methodDecl){
+	public void visit(MethodDecl methodDecl)
+	{
 		Code.put(Code.exit);
 		Code.put(Code.return_);
 	}
 	
-	public void visit(Assignment Assignment) {
+	public void visit(Assignment Assignment) 
+	{
 		Code.store(Assignment.getDesignator().obj);
 	}
 	
@@ -101,13 +133,6 @@ public class CodeGenerator extends VisitorAdaptor {
 		if (Assignment.class != parent.getClass() && FuncCall.class != parent.getClass()) {
 			Code.load(Designator.obj);
 		}
-	}
-	
-	public void visit(FuncCall FuncCall) {
-		Obj functionObj = FuncCall.getDesignator().obj;
-		int offset = functionObj.getAdr() - Code.pc; 
-		Code.put(Code.call);
-		Code.put2(offset);
 	}
 	
 	//Print statement
@@ -161,5 +186,86 @@ public class CodeGenerator extends VisitorAdaptor {
 	public void visit(Var var)
 	{
 		Code.load(var.getDesignator().obj);
+	}
+	public void visit(FuncCall FuncCall) {
+		Obj functionObj = FuncCall.getDesignator().obj;
+		int offset = functionObj.getAdr() - Code.pc; 
+		Code.put(Code.call);
+		Code.put2(offset);
+		//Return will put return value on stact via expr!
+	}
+	public void visit(NewArray newArray)
+	{
+		Code.put(Code.newarray);
+		Struct elemType = newArray.getType().struct;
+		if(elemType.equals(Tab.intType) == true)
+		{
+			Code.put(1);
+		}
+		else
+		{
+			Code.put(0);
+		}
+		//This will leave address of array on stack!
+		//TODO: kako iskoristiti adresu?
+	}
+	//Save operation
+	public void visit(Addop addop)
+	{
+		m_Addop = AddopType.Addop;
+	}
+	public void visit(Minusop minusop)
+	{
+		m_Addop = AddopType.Minusop;
+	}
+	public void visit(Mulop mulop)
+	{
+		m_Mulop = MulopType.Mulop;
+	}
+	public void visit(Divop divop)
+	{
+		m_Mulop = MulopType.Divop;
+	}
+	public void visit(Percop percop)
+	{
+		m_Mulop = MulopType.Percop;
+	}
+	//Code operations
+	public void visit(FactExpr factExpr)
+	{
+		//Operands already on stack
+		switch(m_Mulop)
+		{
+		case Mulop : 
+			Code.put(Code.mul);
+			break;
+		case Divop : 
+			Code.put(Code.div);
+			break;
+		case Percop : 
+			Code.put(Code.rem);
+			break;
+		default:
+		}
+		m_Mulop = MulopType.None;
+	}
+	public void visit(AddExpr addExpr)
+	{
+		//Operands already on stack
+		switch(m_Addop)
+		{
+		case Addop : 
+			Code.put(Code.mul);
+			break;
+		case Minusop : 
+			Code.put(Code.div);
+			break;
+		default:
+		}
+		m_Addop = AddopType.None;
+	}
+	public void visit(NegativeExpr negativeExpr)
+	{
+		Code.put(Code.neg);
 	}
 }
