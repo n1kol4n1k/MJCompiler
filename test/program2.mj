@@ -1,8 +1,9 @@
 program MJProgram
-int x;
 {
 	void main()
 	{
 		print(25, 3);
+		print('n');
+		print(false, 2);
 	}
 }
