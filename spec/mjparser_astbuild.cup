@@ -251,7 +251,7 @@ Designator ::= (DesignatorBasic) IDENT:name {: RESULT=new DesignatorBasic(name);
 				| (DesignatorElem) IDENT:name LSQUAREBR Expr:e RSQUAREBR {: RESULT=new DesignatorElem(name, e); RESULT.setLine(nameleft); :}
 				;
 
-DesignatorList ::= (SingleDesignator) Designator:D1 {: RESULT=new SingleDesignator(D1); RESULT.setLine(D1left); :}
+DesignatorList ::= (SingleDesignator) DesignatorWithEmpty:D1 {: RESULT=new SingleDesignator(D1); RESULT.setLine(D1left); :}
 				| (MultiDesignator) DesignatorList:D1 COMMA DesignatorWithEmpty:D2 {: RESULT=new MultiDesignator(D1, D2); RESULT.setLine(D1left); :}
 				; 
 

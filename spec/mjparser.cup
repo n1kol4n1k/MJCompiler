@@ -233,7 +233,7 @@ Designator ::= (DesignatorBasic) IDENT:name
 				| (DesignatorElem) IDENT:name LSQUAREBR Expr:e RSQUAREBR
 				;
 
-DesignatorList ::= (SingleDesignator) Designator
+DesignatorList ::= (SingleDesignator) DesignatorWithEmpty
 				| (MultiDesignator) DesignatorList COMMA DesignatorWithEmpty
 				; 
 

@@ -531,7 +531,7 @@ public class SemanticPass extends VisitorAdaptor {
 	//Populate member list
 	public void visit(SingleDesignator singleDesignator)
 	{
-		m_MultiAssignmentDesignators.add(singleDesignator.getDesignator().obj);
+		m_MultiAssignmentDesignators.add(singleDesignator.getDesignatorWithEmpty().obj);
 	}
 	public void visit(MultiDesignator multiDesignator)
 	{

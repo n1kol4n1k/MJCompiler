@@ -11,6 +11,8 @@ import rs.ac.bg.etf.pp1.ast.ConstChar;
 import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.Designator;
+import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
+import rs.ac.bg.etf.pp1.ast.DesignatorElem;
 import rs.ac.bg.etf.pp1.ast.DesignatorWithEmpty;
 import rs.ac.bg.etf.pp1.ast.Divop;
 import rs.ac.bg.etf.pp1.ast.EmptyDes;
@@ -67,6 +69,10 @@ public class CodeGenerator extends VisitorAdaptor {
 	}
 	ArrayList<AssignInfo> m_MultiAssignmentInfos = new ArrayList<AssignInfo>();
 	int m_totalElemInMultiAssignment = 0;
+	//int m_lastArrayAddress = 0;
+	//HashMap<Obj, Integer> m_ArrayAddress = new HashMap<Obj, Integer>();
+	Obj m_LastArray = null;
+	public HashMap<String, Obj> m_ArrayObjs = new HashMap<String, Obj>();
 	
 	//Enums for operations
 	enum MulopType
@@ -142,13 +148,27 @@ public class CodeGenerator extends VisitorAdaptor {
 		Code.put(Code.return_);
 	}
 	
-	public void visit(Assignment Assignment) 
+	public void visit(Assignment assignment) 
 	{
-		Code.store(Assignment.getDesignator().obj);
+		Obj dest = assignment.getDesignator().obj;
+		if(dest.getType().getKind() == Struct.Array)
+		{
+			m_ArrayObjs.put(dest.getName(), dest);
+		}
+		
+		//Expand stack for element
+		if(dest.getKind() == Obj.Elem)
+		{
+			Code.load(m_LastArray);
+			Code.put(Code.dup_x2);
+			Code.put(Code.pop);
+		}
+
+		Code.store(dest);
 	}
 	
-	public void visit(Designator Designator) {
-		SyntaxNode parent = Designator.getParent();
+	public void visit(DesignatorBasic designator) {
+		SyntaxNode parent = designator.getParent();
 		if (	Assignment.class != parent.getClass() && 
 				FuncCall.class != parent.getClass() && 
 				StatementFuncCall.class != parent.getClass() &&
@@ -156,7 +176,29 @@ public class CodeGenerator extends VisitorAdaptor {
 				DesignatorWithEmpty.class != parent.getClass() &&
 				MultiAssignment.class != parent.getClass()) 
 		{
-			Code.load(Designator.obj);
+			Code.load(designator.obj);
+		}
+	}
+	
+	public void visit(DesignatorElem designator) {
+		m_LastArray = m_ArrayObjs.get(designator.getName());
+		
+		SyntaxNode parent = designator.getParent();
+		if (	Assignment.class != parent.getClass() && 
+				FuncCall.class != parent.getClass() && 
+				StatementFuncCall.class != parent.getClass() &&
+				SingleDesignator.class != parent.getClass() &&
+				DesignatorWithEmpty.class != parent.getClass() &&
+				MultiAssignment.class != parent.getClass()) 
+		{
+			//Expand stack for element
+			if(designator.obj.getKind() == Obj.Elem)
+			{
+				Code.load(m_LastArray);
+				Code.put(Code.dup_x1);
+				Code.put(Code.pop);
+			}
+			Code.load(designator.obj);
 		}
 	}
 	
@@ -224,7 +266,7 @@ public class CodeGenerator extends VisitorAdaptor {
 	}
 	public void visit(Var var)
 	{
-		Code.load(var.getDesignator().obj);
+		//Code.load(var.getDesignator().obj);
 	}
 	public void visit(FuncCall FuncCall) {
 		Obj functionObj = FuncCall.getDesignator().obj;
@@ -246,7 +288,6 @@ public class CodeGenerator extends VisitorAdaptor {
 			Code.put(0);
 		}
 		//This will leave address of array on stack!
-		//TODO: kako iskoristiti adresu?
 	}
 	//Save operation
 	public void visit(Addop addop)
@@ -350,13 +391,6 @@ public class CodeGenerator extends VisitorAdaptor {
 	{
 		m_MultiAssignmentInfos.add(
 				new AssignInfo(nonEmptyDes.getDesignator().obj,
-						m_totalElemInMultiAssignment));
-		m_totalElemInMultiAssignment++;
-	}
-	public void visit(SingleDesignator singleDesignator)
-	{
-		m_MultiAssignmentInfos.add(
-				new AssignInfo(singleDesignator.getDesignator().obj,
 						m_totalElemInMultiAssignment));
 		m_totalElemInMultiAssignment++;
 	}

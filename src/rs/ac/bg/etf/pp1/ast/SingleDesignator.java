@@ -1,25 +1,25 @@
 // generated with ast extension for cup
 // version 0.8
-// 6/1/2023 3:15:11
+// 6/1/2023 16:55:21
 
 
 package rs.ac.bg.etf.pp1.ast;
 
 public class SingleDesignator extends DesignatorList {
 
-    private Designator Designator;
+    private DesignatorWithEmpty DesignatorWithEmpty;
 
-    public SingleDesignator (Designator Designator) {
-        this.Designator=Designator;
-        if(Designator!=null) Designator.setParent(this);
+    public SingleDesignator (DesignatorWithEmpty DesignatorWithEmpty) {
+        this.DesignatorWithEmpty=DesignatorWithEmpty;
+        if(DesignatorWithEmpty!=null) DesignatorWithEmpty.setParent(this);
     }
 
-    public Designator getDesignator() {
-        return Designator;
+    public DesignatorWithEmpty getDesignatorWithEmpty() {
+        return DesignatorWithEmpty;
     }
 
-    public void setDesignator(Designator Designator) {
-        this.Designator=Designator;
+    public void setDesignatorWithEmpty(DesignatorWithEmpty DesignatorWithEmpty) {
+        this.DesignatorWithEmpty=DesignatorWithEmpty;
     }
 
     public void accept(Visitor visitor) {
@@ -27,16 +27,16 @@ public class SingleDesignator extends DesignatorList {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(Designator!=null) Designator.accept(visitor);
+        if(DesignatorWithEmpty!=null) DesignatorWithEmpty.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(Designator!=null) Designator.traverseTopDown(visitor);
+        if(DesignatorWithEmpty!=null) DesignatorWithEmpty.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(Designator!=null) Designator.traverseBottomUp(visitor);
+        if(DesignatorWithEmpty!=null) DesignatorWithEmpty.traverseBottomUp(visitor);
         accept(visitor);
     }
 
@@ -45,8 +45,8 @@ public class SingleDesignator extends DesignatorList {
         buffer.append(tab);
         buffer.append("SingleDesignator(\n");
 
-        if(Designator!=null)
-            buffer.append(Designator.toString("  "+tab));
+        if(DesignatorWithEmpty!=null)
+            buffer.append(DesignatorWithEmpty.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");
