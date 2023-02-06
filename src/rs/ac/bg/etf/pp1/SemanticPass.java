@@ -616,7 +616,7 @@ public class SemanticPass extends VisitorAdaptor {
 	//(Minus) Expression
 	public void visit(NegativeExpr negativeExpr) 
 	{
-		if(negativeExpr.struct.equals(Tab.intType) == false)
+		if(negativeExpr.getExprInner().struct.equals(Tab.intType) == false)
 		{
 			report_error("Greska, negacija se moze raditi samo nad tipom int", negativeExpr);
 		}
