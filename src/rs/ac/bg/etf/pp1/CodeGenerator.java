@@ -242,6 +242,14 @@ public class CodeGenerator extends VisitorAdaptor {
 		{
 			Code.put(Code.bread);
 		}
+		//Expand stack for element
+		if(readStmt.getDesignator().obj.getKind() == Obj.Elem)
+		{
+			Code.load(m_LastArray);
+			Code.put(Code.dup_x2);
+			Code.put(Code.pop);
+		}
+		Code.store(readStmt.getDesignator().obj);
 	}
 	
 	//Aritmetics
