@@ -1,0 +1,13 @@
+program MJProgram
+{
+	void main()
+	int a;
+	int b;
+	{
+		print(25, 3);
+		print('n');
+		print(false, 2);
+		read(a);
+		print(-(2*a + 25));
+	}
+}

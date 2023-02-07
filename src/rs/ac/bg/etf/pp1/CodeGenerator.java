@@ -10,7 +10,6 @@ import rs.ac.bg.etf.pp1.ast.ConstBool;
 import rs.ac.bg.etf.pp1.ast.ConstChar;
 import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.Decrement;
-import rs.ac.bg.etf.pp1.ast.Designator;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
 import rs.ac.bg.etf.pp1.ast.DesignatorElem;
 import rs.ac.bg.etf.pp1.ast.DesignatorWithEmpty;
@@ -26,7 +25,6 @@ import rs.ac.bg.etf.pp1.ast.MethodVoidName;
 import rs.ac.bg.etf.pp1.ast.Minusop;
 import rs.ac.bg.etf.pp1.ast.Mulop;
 import rs.ac.bg.etf.pp1.ast.MultiAssignment;
-import rs.ac.bg.etf.pp1.ast.MultiDesignator;
 import rs.ac.bg.etf.pp1.ast.NegativeExpr;
 import rs.ac.bg.etf.pp1.ast.NewArray;
 import rs.ac.bg.etf.pp1.ast.NonEmptyDes;
@@ -65,6 +63,7 @@ public class CodeGenerator extends VisitorAdaptor {
 	{
 		public Obj des;
 		public int pos;
+		public Obj arrayObj;
 		public AssignInfo(Obj o, int p) { des=o; pos = p; }
 	}
 	ArrayList<AssignInfo> m_MultiAssignmentInfos = new ArrayList<AssignInfo>();
@@ -378,6 +377,13 @@ public class CodeGenerator extends VisitorAdaptor {
 			Code.load(rightDesignator);
 			Code.loadConst(aInfo.pos);
 			Code.put(instrCode);
+			//Expand stack for element
+			if(aInfo.des.getKind() == Obj.Elem)
+			{
+				Code.load(aInfo.arrayObj);
+				Code.put(Code.dup_x2);
+				Code.put(Code.pop);
+			}
 			Code.store(aInfo.des);
 		}
 
@@ -391,9 +397,12 @@ public class CodeGenerator extends VisitorAdaptor {
 	}
 	public void visit(NonEmptyDes nonEmptyDes)
 	{
-		m_MultiAssignmentInfos.add(
-				new AssignInfo(nonEmptyDes.getDesignator().obj,
-						m_totalElemInMultiAssignment));
+		AssignInfo info = new AssignInfo(nonEmptyDes.getDesignator().obj, m_totalElemInMultiAssignment);
+		if(nonEmptyDes.getDesignator().obj.getKind() == Obj.Elem)
+		{
+			info.arrayObj = m_LastArray;
+		}
+		m_MultiAssignmentInfos.add(info);
 		m_totalElemInMultiAssignment++;
 	}
 

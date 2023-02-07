@@ -243,7 +243,7 @@ DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e {: RESULT=new 
 				{: parser.report_error("Izvrsen oporavak od greske pri dodeli u liniji " + errleft, null);  :} {: RESULT=new AssignmentError(dest); RESULT.setLine(destleft); :}
 				| (Increment) Designator:dest DBLPLUS {: RESULT=new Increment(dest); RESULT.setLine(destleft); :}
 				| (Decrement) Designator:dest DBLMINUS {: RESULT=new Decrement(dest); RESULT.setLine(destleft); :}
-				| (MultiAssignment) LSQUAREBR RSQUAREBR EQUAL Designator:D1 {: RESULT=new MultiAssignment(D1); RESULT.setLine(D1left); :}
+				| (MultiAssignment) LSQUAREBR DesignatorList:D1 RSQUAREBR EQUAL Designator:D2 {: RESULT=new MultiAssignment(D1, D2); RESULT.setLine(D1left); :}
 				| (StatementFuncCall) Designator:dest LPAREN ActualPars:A1 RPAREN {: RESULT=new StatementFuncCall(dest, A1); RESULT.setLine(destleft); :}
 				;
 
@@ -251,7 +251,7 @@ Designator ::= (DesignatorBasic) IDENT:name {: RESULT=new DesignatorBasic(name);
 				| (DesignatorElem) IDENT:name LSQUAREBR Expr:e RSQUAREBR {: RESULT=new DesignatorElem(name, e); RESULT.setLine(nameleft); :}
 				;
 
-DesignatorList ::= (SingleDesignator) Designator:D1 {: RESULT=new SingleDesignator(D1); RESULT.setLine(D1left); :}
+DesignatorList ::= (SingleDesignator) DesignatorWithEmpty:D1 {: RESULT=new SingleDesignator(D1); RESULT.setLine(D1left); :}
 				| (MultiDesignator) DesignatorList:D1 COMMA DesignatorWithEmpty:D2 {: RESULT=new MultiDesignator(D1, D2); RESULT.setLine(D1left); :}
 				; 
 
