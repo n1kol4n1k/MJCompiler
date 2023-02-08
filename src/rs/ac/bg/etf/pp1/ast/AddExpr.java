@@ -1,31 +1,31 @@
 // generated with ast extension for cup
 // version 0.8
-// 7/1/2023 3:18:55
+// 8/1/2023 1:17:25
 
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class AddExpr extends ExprInner {
+public class AddExpr extends Expr {
 
-    private ExprInner ExprInner;
+    private Expr Expr;
     private Addop Addop;
     private Term Term;
 
-    public AddExpr (ExprInner ExprInner, Addop Addop, Term Term) {
-        this.ExprInner=ExprInner;
-        if(ExprInner!=null) ExprInner.setParent(this);
+    public AddExpr (Expr Expr, Addop Addop, Term Term) {
+        this.Expr=Expr;
+        if(Expr!=null) Expr.setParent(this);
         this.Addop=Addop;
         if(Addop!=null) Addop.setParent(this);
         this.Term=Term;
         if(Term!=null) Term.setParent(this);
     }
 
-    public ExprInner getExprInner() {
-        return ExprInner;
+    public Expr getExpr() {
+        return Expr;
     }
 
-    public void setExprInner(ExprInner ExprInner) {
-        this.ExprInner=ExprInner;
+    public void setExpr(Expr Expr) {
+        this.Expr=Expr;
     }
 
     public Addop getAddop() {
@@ -49,20 +49,20 @@ public class AddExpr extends ExprInner {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(ExprInner!=null) ExprInner.accept(visitor);
+        if(Expr!=null) Expr.accept(visitor);
         if(Addop!=null) Addop.accept(visitor);
         if(Term!=null) Term.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(ExprInner!=null) ExprInner.traverseTopDown(visitor);
+        if(Expr!=null) Expr.traverseTopDown(visitor);
         if(Addop!=null) Addop.traverseTopDown(visitor);
         if(Term!=null) Term.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(ExprInner!=null) ExprInner.traverseBottomUp(visitor);
+        if(Expr!=null) Expr.traverseBottomUp(visitor);
         if(Addop!=null) Addop.traverseBottomUp(visitor);
         if(Term!=null) Term.traverseBottomUp(visitor);
         accept(visitor);
@@ -73,8 +73,8 @@ public class AddExpr extends ExprInner {
         buffer.append(tab);
         buffer.append("AddExpr(\n");
 
-        if(ExprInner!=null)
-            buffer.append(ExprInner.toString("  "+tab));
+        if(Expr!=null)
+            buffer.append(Expr.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");

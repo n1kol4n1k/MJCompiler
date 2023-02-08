@@ -1,25 +1,25 @@
 // generated with ast extension for cup
 // version 0.8
-// 7/1/2023 3:18:55
+// 8/1/2023 1:17:25
 
 
 package rs.ac.bg.etf.pp1.ast;
 
 public class NegativeExpr extends Expr {
 
-    private ExprInner ExprInner;
+    private Term Term;
 
-    public NegativeExpr (ExprInner ExprInner) {
-        this.ExprInner=ExprInner;
-        if(ExprInner!=null) ExprInner.setParent(this);
+    public NegativeExpr (Term Term) {
+        this.Term=Term;
+        if(Term!=null) Term.setParent(this);
     }
 
-    public ExprInner getExprInner() {
-        return ExprInner;
+    public Term getTerm() {
+        return Term;
     }
 
-    public void setExprInner(ExprInner ExprInner) {
-        this.ExprInner=ExprInner;
+    public void setTerm(Term Term) {
+        this.Term=Term;
     }
 
     public void accept(Visitor visitor) {
@@ -27,16 +27,16 @@ public class NegativeExpr extends Expr {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(ExprInner!=null) ExprInner.accept(visitor);
+        if(Term!=null) Term.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(ExprInner!=null) ExprInner.traverseTopDown(visitor);
+        if(Term!=null) Term.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(ExprInner!=null) ExprInner.traverseBottomUp(visitor);
+        if(Term!=null) Term.traverseBottomUp(visitor);
         accept(visitor);
     }
 
@@ -45,8 +45,8 @@ public class NegativeExpr extends Expr {
         buffer.append(tab);
         buffer.append("NegativeExpr(\n");
 
-        if(ExprInner!=null)
-            buffer.append(ExprInner.toString("  "+tab));
+        if(Term!=null)
+            buffer.append(Term.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");

@@ -12,6 +12,7 @@ import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
 import rs.ac.bg.etf.pp1.ast.DesignatorElem;
+import rs.ac.bg.etf.pp1.ast.DesignatorList;
 import rs.ac.bg.etf.pp1.ast.DesignatorWithEmpty;
 import rs.ac.bg.etf.pp1.ast.Divop;
 import rs.ac.bg.etf.pp1.ast.EmptyDes;
@@ -41,6 +42,8 @@ import rs.ac.bg.etf.pp1.ast.VisitorAdaptor;
 import rs.etf.pp1.mj.runtime.Code;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Stack;
+
 import rs.etf.pp1.symboltable.concepts.Struct;
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.Obj;
@@ -72,6 +75,7 @@ public class CodeGenerator extends VisitorAdaptor {
 	//HashMap<Obj, Integer> m_ArrayAddress = new HashMap<Obj, Integer>();
 	Obj m_LastArray = null;
 	public HashMap<String, Obj> m_ArrayObjs = new HashMap<String, Obj>();
+	int m_numOfElemsInMulti = 0;
 	
 	//Enums for operations
 	enum MulopType
@@ -172,7 +176,7 @@ public class CodeGenerator extends VisitorAdaptor {
 				FuncCall.class != parent.getClass() && 
 				StatementFuncCall.class != parent.getClass() &&
 				SingleDesignator.class != parent.getClass() &&
-				DesignatorWithEmpty.class != parent.getClass() &&
+				NonEmptyDes.class != parent.getClass() &&
 				MultiAssignment.class != parent.getClass()) 
 		{
 			Code.load(designator.obj);
@@ -187,7 +191,7 @@ public class CodeGenerator extends VisitorAdaptor {
 				FuncCall.class != parent.getClass() && 
 				StatementFuncCall.class != parent.getClass() &&
 				SingleDesignator.class != parent.getClass() &&
-				DesignatorWithEmpty.class != parent.getClass() &&
+				NonEmptyDes.class != parent.getClass() &&
 				MultiAssignment.class != parent.getClass()) 
 		{
 			//Expand stack for element
@@ -321,35 +325,30 @@ public class CodeGenerator extends VisitorAdaptor {
 	public void visit(FactExpr factExpr)
 	{
 		//Operands already on stack
-		switch(m_Mulop)
+		if(factExpr.getMulop() instanceof Divop)
 		{
-		case Mulop : 
-			Code.put(Code.mul);
-			break;
-		case Divop : 
 			Code.put(Code.div);
-			break;
-		case Percop : 
-			Code.put(Code.rem);
-			break;
-		default:
 		}
-		m_Mulop = MulopType.None;
+		else if (factExpr.getMulop() instanceof Percop)
+		{
+			Code.put(Code.rem);
+		}
+		else
+		{
+			Code.put(Code.mul);
+		}
 	}
 	public void visit(AddExpr addExpr)
 	{
 		//Operands already on stack
-		switch(m_Addop)
+		if(addExpr.getAddop() instanceof Minusop)
 		{
-		case Addop : 
-			Code.put(Code.add);
-			break;
-		case Minusop : 
 			Code.put(Code.sub);
-			break;
-		default:
 		}
-		m_Addop = AddopType.None;
+		else
+		{
+			Code.put(Code.add);
+		}
 	}
 	public void visit(NegativeExpr negativeExpr)
 	{
@@ -380,23 +379,41 @@ public class CodeGenerator extends VisitorAdaptor {
 		{
 			instrCode = Code.baload;
 		}
+		Stack<AssignInfo> elems = new Stack<AssignInfo>();
 		for(AssignInfo aInfo : m_MultiAssignmentInfos)
 		{
-			Code.load(rightDesignator);
-			Code.loadConst(aInfo.pos);
-			Code.put(instrCode);
-			//Expand stack for element
-			if(aInfo.des.getKind() == Obj.Elem)
+			if(aInfo.des.getKind() != Obj.Elem)
 			{
-				Code.load(aInfo.arrayObj);
-				Code.put(Code.dup_x2);
-				Code.put(Code.pop);
+				Code.load(rightDesignator);
+				Code.loadConst(aInfo.pos);
+				Code.put(instrCode);
+				Code.store(aInfo.des);
 			}
-			Code.store(aInfo.des);
+			else
+			{
+				elems.push(aInfo);
+			}
+		}
+		
+		while(!elems.empty()) {
+
+			AssignInfo temp = elems.pop();
+			
+			//Expand stack for element
+			Code.load(temp.arrayObj);
+			Code.put(Code.dup_x1);
+			Code.put(Code.pop);
+			
+			Code.load(rightDesignator);
+			Code.loadConst(temp.pos);
+			Code.put(instrCode);
+			
+			Code.store(temp.des);
 		}
 
 		m_MultiAssignmentInfos.clear();
 		m_totalElemInMultiAssignment = 0;
+		m_numOfElemsInMulti = 0;
 	}
 	//Count actual designators, including blanks, store info
 	public void visit(EmptyDes emptyDes)
@@ -409,9 +426,11 @@ public class CodeGenerator extends VisitorAdaptor {
 		if(nonEmptyDes.getDesignator().obj.getKind() == Obj.Elem)
 		{
 			info.arrayObj = m_LastArray;
+			m_numOfElemsInMulti++;
 		}
 		m_MultiAssignmentInfos.add(info);
 		m_totalElemInMultiAssignment++;
 	}
+	
 
 }

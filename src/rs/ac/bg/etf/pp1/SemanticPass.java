@@ -51,7 +51,6 @@ import rs.ac.bg.etf.pp1.ast.MultiDesignator;
 import rs.ac.bg.etf.pp1.ast.NegativeExpr;
 import rs.ac.bg.etf.pp1.ast.NewArray;
 import rs.ac.bg.etf.pp1.ast.NewSingle;
-import rs.ac.bg.etf.pp1.ast.PositiveExpr;
 import rs.ac.bg.etf.pp1.ast.PrintStmt;
 import rs.ac.bg.etf.pp1.ast.ProgName;
 import rs.ac.bg.etf.pp1.ast.Program;
@@ -600,7 +599,7 @@ public class SemanticPass extends VisitorAdaptor {
 	}
 	public void visit(AddExpr addExpr) 
 	{
-		Struct te = addExpr.getExprInner().struct;
+		Struct te = addExpr.getExpr().struct;
 		Struct t = addExpr.getTerm().struct;
 		if (te.equals(t) && te == Tab.intType)
 			addExpr.struct = te;
@@ -612,15 +611,11 @@ public class SemanticPass extends VisitorAdaptor {
 	//(Minus) Expression
 	public void visit(NegativeExpr negativeExpr) 
 	{
-		if(negativeExpr.getExprInner().struct.equals(Tab.intType) == false)
+		if(negativeExpr.getTerm().struct.equals(Tab.intType) == false)
 		{
 			report_error("Greska, negacija se moze raditi samo nad tipom int", negativeExpr);
 		}
-		negativeExpr.struct = negativeExpr.getExprInner().struct;
-	}
-	public void visit(PositiveExpr positiveExpr) 
-	{
-		positiveExpr.struct = positiveExpr.getExprInner().struct;
+		negativeExpr.struct = negativeExpr.getTerm().struct;
 	}
 	
 	//Conditions

@@ -93,7 +93,6 @@ nonterminal ActualParamList ActualParamList;
 
 //Types and calculations
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact, ConstType;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct ExprInner;
 
 //Operations
 nonterminal Relop Relop;
@@ -278,13 +277,10 @@ Relop ::= (Equals) DBLEQ {: RESULT=new Equals(); :}
 				| (Less) LSS {: RESULT=new Less(); :}
 				| (LessEquals) LSSEQ {: RESULT=new LessEquals(); :}
 				;
-		
-Expr ::= (NegativeExpr) MINUS ExprInner:E1 {: RESULT=new NegativeExpr(E1); RESULT.setLine(E1left); :}
-				| (PositiveExpr) ExprInner:E1 {: RESULT=new PositiveExpr(E1); RESULT.setLine(E1left); :}
-				;
 			  			  
-ExprInner ::= (AddExpr) ExprInner:te Addop:A1 Term:t {: RESULT=new AddExpr(te, A1, t); RESULT.setLine(teleft); :}
+Expr::= (AddExpr) Expr:te Addop:A1 Term:t {: RESULT=new AddExpr(te, A1, t); RESULT.setLine(teleft); :}
 		 		| (TermExpr) Term:t {: RESULT=new TermExpr(t); RESULT.setLine(tleft); :}
+		 		| (NegativeExpr) MINUS Term:T1 {: RESULT=new NegativeExpr(T1); RESULT.setLine(T1left); :}
 		 		;
 
 Term ::= (FactSingle) Factor:t {: RESULT=new FactSingle(t); RESULT.setLine(tleft); :}

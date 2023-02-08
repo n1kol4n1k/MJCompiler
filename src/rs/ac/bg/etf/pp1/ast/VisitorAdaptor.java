@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 7/1/2023 3:18:55
+// 8/1/2023 1:17:25
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -10,7 +10,6 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(VarDeclInnerList VarDeclInnerList) { }
     public void visit(VarIdent VarIdent) { }
     public void visit(Relop Relop) { }
-    public void visit(ExprInner ExprInner) { }
     public void visit(StatementList StatementList) { }
     public void visit(ClassName ClassName) { }
     public void visit(Factor Factor) { }
@@ -49,18 +48,17 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(Actuals Actuals) { visit(); }
     public void visit(NewSingle NewSingle) { visit(); }
     public void visit(NewArray NewArray) { visit(); }
-    public void visit(ExprBrackets ExprBrackets) { visit(); }
     public void visit(FuncCall FuncCall) { visit(); }
     public void visit(Var Var) { visit(); }
     public void visit(ConstBool ConstBool) { visit(); }
     public void visit(ConstChar ConstChar) { visit(); }
+    public void visit(ExprBrackets ExprBrackets) { visit(); }
     public void visit(ConstNum ConstNum) { visit(); }
     public void visit(FactExpr FactExpr) { visit(); }
     public void visit(FactSingle FactSingle) { visit(); }
+    public void visit(NegativeExpr NegativeExpr) { visit(); }
     public void visit(TermExpr TermExpr) { visit(); }
     public void visit(AddExpr AddExpr) { visit(); }
-    public void visit(PositiveExpr PositiveExpr) { visit(); }
-    public void visit(NegativeExpr NegativeExpr) { visit(); }
     public void visit(LessEquals LessEquals) { visit(); }
     public void visit(Less Less) { visit(); }
     public void visit(GreaterEquals GreaterEquals) { visit(); }

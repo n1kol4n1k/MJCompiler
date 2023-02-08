@@ -81,7 +81,6 @@ nonterminal StatementList, FormalParamList, DesignatorList, ActualParamList;
 
 //Types and calculations
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact, ConstType;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct ExprInner;
 
 //Operations
 nonterminal Relop, Addop, Mulop;
@@ -260,13 +259,10 @@ Relop ::= (Equals) DBLEQ
 				| (Less) LSS
 				| (LessEquals) LSSEQ
 				;
-		
-Expr ::= (NegativeExpr) MINUS ExprInner
-				| (PositiveExpr) ExprInner
-				;
 			  			  
-ExprInner ::= (AddExpr) ExprInner:te Addop Term:t
+Expr::= (AddExpr) Expr:te Addop Term:t
 		 		| (TermExpr) Term:t
+		 		| (NegativeExpr) MINUS Term
 		 		;
 
 Term ::= (FactSingle) Factor:t
@@ -274,11 +270,11 @@ Term ::= (FactSingle) Factor:t
 				;
 
 Factor ::= (ConstNum) NUMBER:numVal
+				| (ExprBrackets) LPAREN Expr:t RPAREN
 				| (ConstChar) CHAR:charVal
 				| (ConstBool) BOOL:boolVal
 				| (Var) Designator:d
 		    	| (FuncCall) Designator:func LPAREN ActualPars RPAREN
-		    	| (ExprBrackets) LPAREN Expr:t RPAREN
 		    	| (NewArray) NEW Type:t LSQUAREBR Expr:te RSQUAREBR
 		    	| (NewSingle) NEW Type:t LPAREN ActualPars RPAREN
 		   		;
