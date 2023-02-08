@@ -288,11 +288,11 @@ Term ::= (FactSingle) Factor:t {: RESULT=new FactSingle(t); RESULT.setLine(tleft
 				;
 
 Factor ::= (ConstNum) NUMBER:numVal {: RESULT=new ConstNum(numVal); RESULT.setLine(numValleft); :}
+				| (ExprBrackets) LPAREN Expr:t RPAREN {: RESULT=new ExprBrackets(t); RESULT.setLine(tleft); :}
 				| (ConstChar) CHAR:charVal {: RESULT=new ConstChar(charVal); RESULT.setLine(charValleft); :}
 				| (ConstBool) BOOL:boolVal {: RESULT=new ConstBool(boolVal); RESULT.setLine(boolValleft); :}
 				| (Var) Designator:d {: RESULT=new Var(d); RESULT.setLine(dleft); :}
 		    	| (FuncCall) Designator:func LPAREN ActualPars:A1 RPAREN {: RESULT=new FuncCall(func, A1); RESULT.setLine(funcleft); :}
-		    	| (ExprBrackets) LPAREN Expr:t RPAREN {: RESULT=new ExprBrackets(t); RESULT.setLine(tleft); :}
 		    	| (NewArray) NEW Type:t LSQUAREBR Expr:te RSQUAREBR {: RESULT=new NewArray(t, te); RESULT.setLine(tleft); :}
 		    	| (NewSingle) NEW Type:t LPAREN ActualPars:A1 RPAREN {: RESULT=new NewSingle(t, A1); RESULT.setLine(tleft); :}
 		   		;

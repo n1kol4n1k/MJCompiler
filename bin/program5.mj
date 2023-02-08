@@ -12,7 +12,7 @@ program test301
 		int bodovi;
 		bool bt;
 	{
-		bodovi = (pet * 2 / 2 - jedan) * 10 + (3 % 2 + 3 * 2 - 3); 
+		bodovi = 5 - (2 + 1); 
 		print(bodovi);
 		
 		niz = new int[3];

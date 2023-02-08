@@ -12,8 +12,6 @@ import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
 import rs.ac.bg.etf.pp1.ast.DesignatorElem;
-import rs.ac.bg.etf.pp1.ast.DesignatorList;
-import rs.ac.bg.etf.pp1.ast.DesignatorWithEmpty;
 import rs.ac.bg.etf.pp1.ast.Divop;
 import rs.ac.bg.etf.pp1.ast.EmptyDes;
 import rs.ac.bg.etf.pp1.ast.FactExpr;
@@ -57,9 +55,12 @@ public class CodeGenerator extends VisitorAdaptor {
 	public void SetFormParmsMap(HashMap<Obj, ArrayList<Struct>> fpmap) { m_formParmsMap = fpmap; }
 	Struct boolType = null;
 	public void SetBoolType(Struct t) { boolType = t; }
+	Obj m_Counter = null;
 	
 	boolean m_IsClassScope = false;
 	int m_NumOfPrints = 1;
+	
+	boolean m_IsNewArray = false;
 	
 	//For multi assignment
 	class AssignInfo
@@ -93,7 +94,6 @@ public class CodeGenerator extends VisitorAdaptor {
 	}
 	MulopType m_Mulop = MulopType.None;
 	AddopType m_Addop = AddopType.None;
-	
 	
 	//Classes scope detection, to ignore generating code for it
 	public void visit(ClassDeclEnter classDeclEnter)
@@ -154,20 +154,62 @@ public class CodeGenerator extends VisitorAdaptor {
 	public void visit(Assignment assignment) 
 	{
 		Obj dest = assignment.getDesignator().obj;
+		
 		if(dest.getType().getKind() == Struct.Array)
 		{
-			m_ArrayObjs.put(dest.getName(), dest);
+			if(m_IsNewArray)
+			{
+				m_ArrayObjs.put(dest.getName(), dest);
+				Code.store(dest);
+			}
+			else
+			{
+				//MODIFIKACIJA FEBRUAR
+				//srcAdr
+				Code.put(Code.dup);
+
+				
+				Code.put(Code.dup); //srcAdr, srcAdr
+				Code.put(Code.arraylength); //srcAdr, length(srcAdr)
+				Code.store(m_Counter);
+
+				Code.put(Code.dup); //ovde se vratiti
+				Code.load(m_Counter);
+				Code.loadConst(1);
+				Code.put(Code.sub);
+				Code.put(Code.dup);
+				Code.loadConst(-1);
+				Code.put(Code.jcc + Code.eq);
+				Code.put2(24);
+				Code.store(m_Counter); //m_counter = length
+				
+				Code.load(m_Counter);
+				
+				Code.put(Code.aload); // srcAdr[cnt];
+				Code.load(m_Counter); // srcAdr[cnt], index
+				Code.put(Code.dup_x1);
+				Code.put(Code.pop); // index, srcAdr[int]
+				Code.load(dest);
+				Code.put(Code.dup_x2);
+				Code.put(Code.pop); // destAdr, index, srcAdr[int]
+				Code.put(Code.astore);
+				Code.put(Code.jmp);
+				Code.put2(-29);
+			}
+			
+			m_IsNewArray = false;
+			return;
 		}
-		
+	
 		//Expand stack for element
 		if(dest.getKind() == Obj.Elem)
 		{
 			Code.load(m_LastArray);
 			Code.put(Code.dup_x2);
 			Code.put(Code.pop);
+			Code.store(dest);
 		}
-
-		Code.store(dest);
+		
 	}
 	
 	public void visit(DesignatorBasic designator) {
@@ -298,6 +340,7 @@ public class CodeGenerator extends VisitorAdaptor {
 		{
 			Code.put(0);
 		}
+		m_IsNewArray = true;
 		//This will leave address of array on stack!
 	}
 	//Save operation

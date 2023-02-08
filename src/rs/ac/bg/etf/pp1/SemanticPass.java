@@ -78,6 +78,7 @@ public class SemanticPass extends VisitorAdaptor {
 	
 	//Symbol Table Expansion
 	public Struct boolType = new Struct(Struct.Bool);
+	public Obj m_HelperVar = null;
 	
 	//Helper structures
 	class VarInfo
@@ -137,7 +138,8 @@ public class SemanticPass extends VisitorAdaptor {
 	public void visit(ProgName progName) 
 	{
 		progName.obj = Tab.insert(Obj.Prog, progName.getPName(), Tab.noType);
-		Tab.openScope();     	
+		Tab.openScope(); 
+		m_HelperVar = Tab.insert(Obj.Var, "helper", Tab.intType);
 	}
 	
 	//Exiting program
@@ -432,6 +434,10 @@ public class SemanticPass extends VisitorAdaptor {
 		{
 			report_error("Greska: Pri dodeli, ime " +  assignment.getDesignator().obj.getName() + 
 					" mora biti promenljiva, element niza ili polje.", assignment);
+		}
+		//if(assignment.getDesignator().obj.getType().getKind() == Struct.Array)
+		{
+			
 		}
 		if (!assignment.getExpr().struct.assignableTo(assignment.getDesignator().obj.getType()))
 		{
