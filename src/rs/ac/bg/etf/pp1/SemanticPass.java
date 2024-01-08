@@ -80,7 +80,7 @@ import rs.ac.bg.etf.pp1.ast.NotEquals;
 
 public class SemanticPass extends VisitorAdaptor {
 	
-	//Symbol Table Expansion
+	//Symbol Table Expansions
 	public Struct boolType = new Struct(Struct.Bool);
 	public Obj m_HelperVar = null;
 	
