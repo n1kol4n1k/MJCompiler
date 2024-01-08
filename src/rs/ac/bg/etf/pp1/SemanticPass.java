@@ -30,11 +30,13 @@ import rs.ac.bg.etf.pp1.ast.ContinueStmt;
 import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
 import rs.ac.bg.etf.pp1.ast.DesignatorElem;
+import rs.ac.bg.etf.pp1.ast.DesignatorMatrixElem;
 import rs.ac.bg.etf.pp1.ast.EmptyDes;
 import rs.ac.bg.etf.pp1.ast.Equals;
 import rs.ac.bg.etf.pp1.ast.ExprBrackets;
 import rs.ac.bg.etf.pp1.ast.FactExpr;
 import rs.ac.bg.etf.pp1.ast.FactSingle;
+import rs.ac.bg.etf.pp1.ast.FindAnyStmt;
 import rs.ac.bg.etf.pp1.ast.FormalParamDecl;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
 import rs.ac.bg.etf.pp1.ast.Greater;
@@ -50,6 +52,7 @@ import rs.ac.bg.etf.pp1.ast.MultiAssignment;
 import rs.ac.bg.etf.pp1.ast.MultiDesignator;
 import rs.ac.bg.etf.pp1.ast.NegativeExpr;
 import rs.ac.bg.etf.pp1.ast.NewArray;
+import rs.ac.bg.etf.pp1.ast.NewMatrix;
 import rs.ac.bg.etf.pp1.ast.NewSingle;
 import rs.ac.bg.etf.pp1.ast.PrintStmt;
 import rs.ac.bg.etf.pp1.ast.ProgName;
@@ -64,6 +67,7 @@ import rs.ac.bg.etf.pp1.ast.Type;
 import rs.ac.bg.etf.pp1.ast.Var;
 import rs.ac.bg.etf.pp1.ast.VarArray;
 import rs.ac.bg.etf.pp1.ast.VarDecl;
+import rs.ac.bg.etf.pp1.ast.VarMatrix;
 import rs.ac.bg.etf.pp1.ast.VarSingle;
 import rs.ac.bg.etf.pp1.ast.VisitorAdaptor;
 import rs.ac.bg.etf.pp1.ast.WhileEnter;
@@ -186,6 +190,12 @@ public class SemanticPass extends VisitorAdaptor {
 	{
 		if(m_IsClassScope == true) { return; }
 		AddVarInfo(varSingle.getVName(), false);
+	}
+	
+	public void visit(VarMatrix varMatrix)
+	{
+		if(m_IsClassScope == true) { return; }
+		AddVarInfo(varMatrix.getVName(), true);
 	}
 	
 	public void visit(VarArray varArray)
@@ -578,6 +588,16 @@ public class SemanticPass extends VisitorAdaptor {
 
 		newArray.struct = new Struct(Struct.Array, newArray.getType().struct);
 	}
+	public void visit(NewMatrix newMatrix)
+	{
+		if(newMatrix.getExpr().struct != Tab.intType || newMatrix.getExpr1().struct != Tab.intType)
+		{
+			report_error("Greska: broj elemenata matrice pri kreiranju mora da bude tipa int", newMatrix);
+		}
+
+		Struct arrayMatrix = new Struct(Struct.Array, newMatrix.getType().struct);
+		newMatrix.struct = new Struct(Struct.Array, arrayMatrix);
+	}
 	public void visit(NewSingle newSingle)
 	{
 		report_error("Greska: Verzija MJ ne podrzava klase! ", newSingle);
@@ -756,6 +776,35 @@ public class SemanticPass extends VisitorAdaptor {
 		designatorElem.obj = obj;
 	}
 	
+public void visit(DesignatorMatrixElem designatorMatrixElem){
+		
+		if(designatorMatrixElem.getExpr().struct.equals(Tab.intType) == false
+				|| designatorMatrixElem.getExpr1().struct.equals(Tab.intType) == false)
+		{
+			report_error("[Matrix] Indeks niza " + designatorMatrixElem.getName() + " mora da bude tipa int ", designatorMatrixElem);
+		}
+		
+		Obj obj = Tab.find(designatorMatrixElem.getName());
+		if (obj == Tab.noObj) 
+		{ 
+			report_error("[Matrix] Greska na liniji " + designatorMatrixElem.getLine()+ " : ime "+designatorMatrixElem.getName()+" nije deklarisano! ", null);
+		}
+		else
+		{
+			if(obj.getType().getKind() == Struct.Array
+					&& obj.getType().getElemType().getKind() == Struct.Array)
+			{
+				obj = new Obj(Obj.Elem, "Elem", obj.getType().getElemType().getElemType());
+			}
+			else
+			{
+				report_error("[Matrix] Greska: " + designatorMatrixElem.getName() + " ne predstavlja niz ", designatorMatrixElem);
+			}
+		}
+		
+		designatorMatrixElem.obj = obj;
+	}
+	
 	//Loops
 	public void visit(WhileEnter whileEnter)
 	{
@@ -800,6 +849,21 @@ public class SemanticPass extends VisitorAdaptor {
 		if(IsPrimitiveType(expr) == false)
 		{
 			report_error("Greska: print funkcija prima samo osnovne tipove", printStmt);
+		}
+	}
+	//FindAny
+	public void visit(FindAnyStmt findAnyStmt)
+	{
+		Obj boolForStore = findAnyStmt.getDesignator().obj;
+		if(boolForStore.getType() != boolType)
+		{
+			report_error("Greska: sa leve strane findAny mora biti promenljiva tipa bool", findAnyStmt);
+		}
+		
+		Obj arrayForSearch = findAnyStmt.getDesignator1().obj;
+		if(arrayForSearch.getType().getKind() != Struct.Array)
+		{
+			report_error("Greska: sa desne strane findAny mora biti promenljiva tipa niza", findAnyStmt);
 		}
 	}
 	

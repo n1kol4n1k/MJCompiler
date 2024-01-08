@@ -12,9 +12,11 @@ import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
 import rs.ac.bg.etf.pp1.ast.DesignatorElem;
+import rs.ac.bg.etf.pp1.ast.DesignatorMatrixElem;
 import rs.ac.bg.etf.pp1.ast.Divop;
 import rs.ac.bg.etf.pp1.ast.EmptyDes;
 import rs.ac.bg.etf.pp1.ast.FactExpr;
+import rs.ac.bg.etf.pp1.ast.FindAnyStmt;
 import rs.ac.bg.etf.pp1.ast.FuncCall;
 import rs.ac.bg.etf.pp1.ast.Increment;
 import rs.ac.bg.etf.pp1.ast.MethodBasicTypeName;
@@ -26,6 +28,7 @@ import rs.ac.bg.etf.pp1.ast.Mulop;
 import rs.ac.bg.etf.pp1.ast.MultiAssignment;
 import rs.ac.bg.etf.pp1.ast.NegativeExpr;
 import rs.ac.bg.etf.pp1.ast.NewArray;
+import rs.ac.bg.etf.pp1.ast.NewMatrix;
 import rs.ac.bg.etf.pp1.ast.NonEmptyDes;
 import rs.ac.bg.etf.pp1.ast.Percop;
 import rs.ac.bg.etf.pp1.ast.SpecNumConst;
@@ -60,7 +63,14 @@ public class CodeGenerator extends VisitorAdaptor {
 	boolean m_IsClassScope = false;
 	int m_NumOfPrints = 1;
 	
-	boolean m_IsNewArray = false;
+	enum DataType
+	{
+		Invalid,
+		Variable, 
+		Array, 
+		Matrix
+	}
+	DataType m_NewType = DataType.Invalid;
 	
 	//For multi assignment
 	class AssignInfo
@@ -78,7 +88,7 @@ public class CodeGenerator extends VisitorAdaptor {
 	public HashMap<String, Obj> m_ArrayObjs = new HashMap<String, Obj>();
 	int m_numOfElemsInMulti = 0;
 	
-	//Enums for operations
+	//Enums for operations - DEPRECATED
 	enum MulopType
 	{
 		None, 
@@ -154,19 +164,41 @@ public class CodeGenerator extends VisitorAdaptor {
 	public void visit(Assignment assignment) 
 	{
 		Obj dest = assignment.getDesignator().obj;
+		//Expand stack for element
+		if(dest.getKind() == Obj.Elem)
+		{
+			Code.load(m_LastArray);
+			Code.put(Code.dup_x2);
+			Code.put(Code.pop);
+			Code.store(dest);
+			return;
+		}
 		
+		DataType destDataType = GetDataType(dest);
+		
+		switch(destDataType)
+		{
+		
+		case Array:
+		case Matrix:
+			m_ArrayObjs.put(dest.getName(), dest);
+		case Variable:
+			Code.store(dest);
+			break;
+		default:	
+		}
 		if(dest.getType().getKind() == Struct.Array)
 		{
-			if(m_IsNewArray)
+			if(m_NewType == DataType.Array)
 			{
-				m_ArrayObjs.put(dest.getName(), dest);
-				Code.store(dest);
+				//m_ArrayObjs.put(dest.getName(), dest);
+				//Code.store(dest);
 			}
 			else
 			{
-				//MODIFIKACIJA FEBRUAR
+				//MODIFIKACIJA FEBRUAR - kopiranje niza, niz1 = niz2;
 				//srcAdr
-				Code.put(Code.dup);
+				/*Code.put(Code.dup);
 
 				
 				Code.put(Code.dup); //srcAdr, srcAdr
@@ -195,20 +227,12 @@ public class CodeGenerator extends VisitorAdaptor {
 				Code.put(Code.astore);
 				Code.put(Code.jmp);
 				Code.put2(-29);
+				*/
 			}
-			
-			m_IsNewArray = false;
 			return;
 		}
 	
-		//Expand stack for element
-		if(dest.getKind() == Obj.Elem)
-		{
-			Code.load(m_LastArray);
-			Code.put(Code.dup_x2);
-			Code.put(Code.pop);
-			Code.store(dest);
-		}
+		
 		
 	}
 	
@@ -242,6 +266,36 @@ public class CodeGenerator extends VisitorAdaptor {
 				Code.load(m_LastArray);
 				Code.put(Code.dup_x1);
 				Code.put(Code.pop);
+			}
+			Code.load(designator.obj);
+		}
+	}
+	
+	public void visit(DesignatorMatrixElem designator) {
+		m_LastArray = m_ArrayObjs.get(designator.getName());
+		
+		SyntaxNode parent = designator.getParent();
+		if (	Assignment.class != parent.getClass() && 
+				FuncCall.class != parent.getClass() && 
+				StatementFuncCall.class != parent.getClass() &&
+				SingleDesignator.class != parent.getClass() &&
+				NonEmptyDes.class != parent.getClass() &&
+				MultiAssignment.class != parent.getClass()) 
+		{
+			//Expand stack for element
+			if(designator.obj.getKind() == Obj.Elem)
+			{
+				//on stack: ^ e2 e1
+				Code.load(m_LastArray);
+				//on stack: ^ e2 e1 addrMatrix
+				Code.put(Code.dup_x1);
+				Code.put(Code.pop);
+				//on stack: ^ e2 addrMatrix e1
+				Code.put(Code.aload);
+				//on stack: ^ e2 addrArray
+				Code.put(Code.dup_x1);
+				Code.put(Code.pop);
+				//on stack: ^ addrArray e2
 			}
 			Code.load(designator.obj);
 		}
@@ -298,6 +352,97 @@ public class CodeGenerator extends VisitorAdaptor {
 		Code.store(readStmt.getDesignator().obj);
 	}
 	
+	//FindAny
+	public void visit(FindAnyStmt findAnyStmt)
+	{
+		Obj boolForStore = findAnyStmt.getDesignator().obj;		
+		Obj arrayForSearch = findAnyStmt.getDesignator1().obj;
+		
+		//bSt = aSr.findAny(exp);
+		//------------------------------
+		//m_counter = size(aSr);
+		//while (m_counter > 0) // if m_counter == 0 jmp -> end_of_loop
+		//{
+		//	if (aSr[m_counter] == exp)
+		//	{
+		//		bSr = true;
+		//		return;
+		//	}
+		//	m_counter--;
+		//}
+		//bSr = false;
+		
+		//Initial stack: ^ bSt aSr exp  
+		
+		//Initialise counter
+		Code.put(Code.dup_x1); //^ bSt exp aSr exp
+		Code.put(Code.pop); //^ bSt exp aSr
+		Code.put(Code.dup); //^ bSt exp aSr aSr 
+		Code.put(Code.arraylength); //^ bSt exp aSr length(aSr)
+		Code.loadConst(1);
+		Code.put(Code.sub);
+		Code.store(m_Counter); //^ bSt exp aSr ; m_Counter = length(aSr) - 1;
+		
+		//Begin loop
+		int loopStart = Code.pc;
+		Code.load(m_Counter); //^ bSt exp aSr m_Counter
+		Code.loadConst(0); //^ bSt exp aSr m_Counter 0
+		Code.putFalseJump(Code.ge, 0); //^ bSt exp aSr
+		int fixup1 = Code.pc - 2;
+		
+		//Body of loop
+		Code.put(Code.dup_x1); //^ bSt aSr exp aSr
+		
+		Code.load(m_Counter); //^ bSt aSr exp aSr m_Counter
+		int instrCode = Code.aload;
+		if(arrayForSearch.getType().getElemType() == Tab.charType)
+		{
+			instrCode = Code.baload;
+		}
+		Code.put(instrCode); //^ bSt aSr exp aSr[m_Counter]
+		
+		//Stack shenanigans
+		Code.put(Code.dup2);
+		Code.put(Code.pop); //^ bSt aSr exp aSr[m_Counter] exp
+		
+		
+		//Condition inside loop
+		Code.putFalseJump(Code.eq, 0); //^ bSt aSr exp
+		int fixup2 = Code.pc - 2;
+		//Code.put(Code.dup_x2); //^ exp bSt aSr exp
+		//Code.put(Code.pop); //^ exp bSt aSr
+		//Code.put(Code.dup_x2); //^aSr exp bSt aSr
+		//Code.put(Code.pop); //^aSr exp bSt
+		Code.loadConst(1);
+		Code.store(boolForStore); //bSt = true
+		Code.putJump(0); //return
+		int fixup3 = Code.pc - 2;
+		
+		//End loop
+		Code.fixup(fixup2);
+		//Fix stack for next iteration
+		//Should be: ^ exp bSt aSr
+		//Right now: ^ bSt aSr exp
+		Code.put(Code.dup_x2);
+		Code.put(Code.pop);
+		//Decrement counter
+		Code.load(m_Counter);
+		Code.loadConst(1);
+		Code.put(Code.sub);
+		Code.store(m_Counter);
+		Code.putJump(loopStart);
+		Code.fixup(fixup1);
+		
+		Code.loadConst(0);
+		Code.store(boolForStore); //bSt = false
+		
+		Code.fixup(fixup3);
+		Code.put(Code.pop);
+		Code.put(Code.pop);
+		Code.put(Code.pop);
+	}
+	
+	
 	//Aritmetics
 	public void visit(ConstNum constNum)
 	{
@@ -340,10 +485,78 @@ public class CodeGenerator extends VisitorAdaptor {
 		{
 			Code.put(0);
 		}
-		m_IsNewArray = true;
+		m_NewType = DataType.Array;
 		//This will leave address of array on stack!
 	}
-	//Save operation
+	public void visit(NewMatrix newMatrix)
+	{
+		/*
+		int loopStart;
+		int fixupAddr;
+		//on stack: ^ e2 e1 
+		Code.put(Code.newarray);
+		Struct elemType = newMatrix.getType().struct;
+		Code.put(1);
+		//This will leave address of array (size e1) of adresses of arrays on stack!
+		//on stack: ^ e2 addrMatrix
+		Code.put(Code.dup);
+		//on stack: ^ e2 addrMatrix addrMatrix
+		Code.put(Code.arraylength);
+		//on stack: ^ e2 addrMatrix e1
+		Code.store(m_Counter); //m_Counter = e1
+		//on stack: ^ e2 addrMatrix
+		loopStart = Code.pc;
+		Code.load(m_Counter);
+		Code.loadConst(0);
+		Code.put(Code.jcc + Code.eq);
+		Code.put2(0);
+		fixupAddr = Code.pc - 2;
+		//do smt..
+		//on stack: ^ e2 addrMatrix
+		Code.put(Code.dup2);
+		Code.put(Code.pop);
+		//on stack: ^ e2 addrMatrix e2
+		Code.put(Code.newarray);
+		if(elemType.equals(Tab.intType) == true)
+		{
+			Code.put(1);
+		}
+		else
+		{
+			Code.put(0);
+		}
+		//on stack: ^ e2 addrMatrix addrArray
+		//we need: ^ e2 addrMatrix m_counter addrArray
+		Code.load(m_Counter);
+		//on stack: ^ e2 addrMatrix addrArray m_Counter
+		Code.put(Code.dup_x1);
+		//on stack: ^ e2 addrMatrix m_Counter addrArray m_Counter
+		Code.put(Code.pop);
+		//on stack: ^ e2 addrMatrix m_Counter addrArray
+		Code.put(Code.astore);
+		//on stack: ^ e2 addrMatrix
+		//loop exit
+		Code.load(m_Counter);
+		Code.loadConst(1);
+		Code.put(Code.sub);
+		Code.store(m_Counter);
+		//better fixup
+		Code.put2(fixupAddr, (Code.pc-fixupAddr + 1) + 3);
+		Code.putJump(loopStart);
+		//on stack: ^ e2 addrMatrix
+		Code.put(Code.dup_x1);
+		//on stack: ^ addrMatrix e2 addrMatrix
+		Code.put(Code.pop);
+		Code.put(Code.pop);
+		//on stack: ^ addrMatrix
+		
+		m_NewType = DataType.Matrix;
+		//This will leave address of array on stack!
+		 
+		 */
+	}
+	
+	//Save operation - DEPRECATED
 	public void visit(Addop addop)
 	{
 		m_Addop = AddopType.Addop;
@@ -475,5 +688,19 @@ public class CodeGenerator extends VisitorAdaptor {
 		m_totalElemInMultiAssignment++;
 	}
 	
+	//HELPERS
+	private DataType GetDataType(Obj obj)
+	{
+		Struct objStruct = obj.getType();
+		if(objStruct.getKind() == Struct.Array)
+		{
+			if(objStruct.getElemType().getKind() == Struct.Array)
+			{
+				return DataType.Matrix;
+			}
+			return DataType.Array;
+		}
+		return DataType.Variable;
+	}
 
 }

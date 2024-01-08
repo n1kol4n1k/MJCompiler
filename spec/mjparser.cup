@@ -54,10 +54,10 @@ scan with {:
 :}
 
 //Keywords
-terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH;
+terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH, FINDANY;
 
 //Special Characters
-terminal LBRACE, RBRACE, SEMI, LPAREN, RPAREN, LSQUAREBR, RSQUAREBR;
+terminal LBRACE, RBRACE, SEMI, LPAREN, RPAREN, LSQUAREBR, RSQUAREBR, DOT;
 
 //Operators
 terminal PLUS, MINUS, STAR, FWDSLASH, PERC, DBLEQ, EXLEQ, GRT, GRTEQ, LSS, LSSEQ, DBLAMP, DBLVER, COMMA, EQUAL, DBLPLUS, DBLMINUS;
@@ -141,6 +141,7 @@ VarDeclInnerList ::= (VarDeclarationsInner) VarDeclInnerList COMMA VarIdent
 				;
 				
 VarIdent ::= (VarSingle) IDENT:vName
+				| (VarMatrix) IDENT:vName LSQUAREBR RSQUAREBR LSQUAREBR RSQUAREBR
 				| (VarArray) IDENT:vName LSQUAREBR RSQUAREBR
 				| (VarError) error:err
 		  		{: parser.report_error("Izvrsen oporavak od greske pri deklarisanju promenljive u liniji " + errleft, null);  :}
@@ -205,6 +206,8 @@ Statement ::= (DesignatorStmt) DesignatorStatement SEMI
 			  (ReadStmt) READ LPAREN Designator RPAREN SEMI
 			  |
 			  (PrintStmt) PRINT LPAREN Expr NumConst RPAREN SEMI
+			  |
+			  (FindAnyStmt) Designator:boolForStore EQUAL Designator:arrayForSearch DOT FINDANY LPAREN Expr RPAREN SEMI
 			  ;
 
 NumConst ::= (SpecNumConst) COMMA NUMBER:repeatVal
@@ -230,6 +233,7 @@ DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e
 
 Designator ::= (DesignatorBasic) IDENT:name
 				| (DesignatorElem) IDENT:name LSQUAREBR Expr:e RSQUAREBR
+				| (DesignatorMatrixElem) IDENT:name LSQUAREBR Expr:e1 RSQUAREBR LSQUAREBR Expr:e2 RSQUAREBR
 				;
 
 DesignatorList ::= (SingleDesignator) DesignatorWithEmpty
@@ -277,6 +281,7 @@ Factor ::= (ConstNum) NUMBER:numVal
 		    	| (FuncCall) Designator:func LPAREN ActualPars RPAREN
 		    	| (NewArray) NEW Type:t LSQUAREBR Expr:te RSQUAREBR
 		    	| (NewSingle) NEW Type:t LPAREN ActualPars RPAREN
+		    	| (NewMatrix) NEW Type:t LSQUAREBR Expr:e1 RSQUAREBR LSQUAREBR Expr:e2 RSQUAREBR
 		   		;
 
 ActualPars ::= (Actuals) ActualParamList 

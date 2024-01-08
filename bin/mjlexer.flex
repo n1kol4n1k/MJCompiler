@@ -52,6 +52,7 @@ import java_cup.runtime.Symbol;
 "extends"	{ return new_symbol(sym.EXTENDS, yytext()); }
 "continue"	{ return new_symbol(sym.CONTINUE, yytext()); }
 "foreach"	{ return new_symbol(sym.FOREACH, yytext()); }
+"findAny"	{ return new_symbol(sym.FINDANY, yytext()); }
 
 //Special Characters
 "{" 		{ return new_symbol(sym.LBRACE, yytext()); }
@@ -80,6 +81,7 @@ import java_cup.runtime.Symbol;
 "||"		{ return new_symbol(sym.DBLVER, yytext()); }
 ","			{ return new_symbol(sym.COMMA, yytext()); }
 "="			{ return new_symbol(sym.EQUAL, yytext()); }
+"."			{ return new_symbol(sym.DOT, yytext()); }
 
 "true" { return new_symbol(sym.BOOL, true); }
 "false" { return new_symbol(sym.BOOL, false); }

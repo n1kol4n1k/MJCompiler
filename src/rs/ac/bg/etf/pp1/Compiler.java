@@ -37,11 +37,13 @@ public class Compiler {
 		log.info("Compiling source file: " + sourceCode.getAbsolutePath());
 		
 		try (BufferedReader br = new BufferedReader(new FileReader(sourceCode))) {
+			//SYNTAX PASS
 			Yylex lexer = new Yylex(br);
 			MJParser p = new MJParser(lexer);
-	        Symbol s = p.parse();  //pocetak parsiranja
+	        Symbol s = p.parse();
 	        SyntaxNode prog = (SyntaxNode)(s.value);
 	        
+	        //SEMANTIC PASS
 			Tab.init(); // Universe scope
 			SemanticPass semanticCheck = new SemanticPass();
 			semanticCheck.ExpandSymTable();
@@ -55,7 +57,7 @@ public class Compiler {
 	        	if (objFile.exists())
 	        		objFile.delete();
 	        	
-	        	// Code generation...
+	        	//CODE GENERATION
 	        	CodeGenerator codeGenerator = new CodeGenerator();
 	        	codeGenerator.SetFormParmsMap(semanticCheck.GetFormParmsMap());
 	        	codeGenerator.SetBoolType(semanticCheck.boolType);

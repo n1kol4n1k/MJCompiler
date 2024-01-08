@@ -1,0 +1,16 @@
+program MJProgram
+int niz1[];
+{
+	void main()
+	int a[];
+	bool exists;
+	{
+		a = new int[3];
+		a[0] = 10;
+		a[1] = 20;
+		a[2] = 30;
+		
+		exists = a.findAny(33);
+		print(exists);
+	}
+}

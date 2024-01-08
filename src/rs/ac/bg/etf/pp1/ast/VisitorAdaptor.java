@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 9/1/2023 0:8:48
+// 22/7/2023 22:33:43
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -46,6 +46,7 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(ActualParams ActualParams) { visit(); }
     public void visit(NoActuals NoActuals) { visit(); }
     public void visit(Actuals Actuals) { visit(); }
+    public void visit(NewMatrix NewMatrix) { visit(); }
     public void visit(NewSingle NewSingle) { visit(); }
     public void visit(NewArray NewArray) { visit(); }
     public void visit(FuncCall FuncCall) { visit(); }
@@ -75,6 +76,7 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(EmptyDes EmptyDes) { visit(); }
     public void visit(MultiDesignator MultiDesignator) { visit(); }
     public void visit(SingleDesignator SingleDesignator) { visit(); }
+    public void visit(DesignatorMatrixElem DesignatorMatrixElem) { visit(); }
     public void visit(DesignatorElem DesignatorElem) { visit(); }
     public void visit(DesignatorBasic DesignatorBasic) { visit(); }
     public void visit(StatementFuncCall StatementFuncCall) { visit(); }
@@ -89,6 +91,7 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(WhileEnter WhileEnter) { visit(); }
     public void visit(NoNumConst NoNumConst) { visit(); }
     public void visit(SpecNumConst SpecNumConst) { visit(); }
+    public void visit(FindAnyStmt FindAnyStmt) { visit(); }
     public void visit(PrintStmt PrintStmt) { visit(); }
     public void visit(ReadStmt ReadStmt) { visit(); }
     public void visit(BlankReturnStmt BlankReturnStmt) { visit(); }
@@ -120,6 +123,7 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(VarDeclarations VarDeclarations) { visit(); }
     public void visit(VarError VarError) { visit(); }
     public void visit(VarArray VarArray) { visit(); }
+    public void visit(VarMatrix VarMatrix) { visit(); }
     public void visit(VarSingle VarSingle) { visit(); }
     public void visit(SingleVarDecl SingleVarDecl) { visit(); }
     public void visit(VarDeclarationsInner VarDeclarationsInner) { visit(); }

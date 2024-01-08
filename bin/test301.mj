@@ -8,6 +8,7 @@ program test301
 
 	int niz[], niz2[], a, b;
 	char nizch[];
+	int mat[][];
 	
 {
 	void main()	
@@ -30,22 +31,13 @@ program test301
 		print(bodovi);
 		print(niz[2]);
 		
-		
-		[a,b] = niz;
-		print(a);	// niz[0] -> 1
-		print(b);	// niz[1] -> 2
-		
-		
-		[,a,] = niz;
-		print(a);	// niz[1] -> 2
-
-		niz2 = new int[2];
-		[niz2[0],,niz2[niz[nula]]] = niz;
-
-		print(niz2[0]);	// niz[0] -> 1
-		print(niz2[1]); // niz[2] -> 6 
-		
-		// [niz2[0],,,niz2[niz[nula]]] = niz; // runtime error!
+		mat = new int[2][2];
+		mat[0][0] = niz[nula];
+		mat[0][mat[0][0]] = 2;
+		mat[1][jedan - niz[0]] = 5;
+		mat[1][1] = mat[0][0] * mat[0][1];
+		print(mat[1][0]); // 5
+		print(mat[1][1]); // 2
 		
 		nizch = new char[3];
 		nizch[0] = 'a';
