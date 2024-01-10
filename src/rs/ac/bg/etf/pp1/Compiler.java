@@ -18,6 +18,7 @@ import rs.etf.pp1.symboltable.Tab;
 public class Compiler 
 {
 
+	//Logger configuration
 	static 
 	{
 		DOMConfigurator.configure(Log4JUtils.instance().findLoggerConfigFile());

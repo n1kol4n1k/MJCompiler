@@ -54,13 +54,14 @@ scan with {:
 :}
 
 //Keywords
-terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH, FINDANY;
+terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH, FINDANY, NAMESPACE;
 
 //Special Characters
 terminal LBRACE, RBRACE, SEMI, LPAREN, RPAREN, LSQUAREBR, RSQUAREBR, DOT;
 
 //Operators
 terminal PLUS, MINUS, STAR, FWDSLASH, PERC, DBLEQ, EXLEQ, GRT, GRTEQ, LSS, LSSEQ, DBLAMP, DBLVER, COMMA, EQUAL, DBLPLUS, DBLMINUS;
+terminal DBLCOLON;
 
 //Value Tokens
 terminal Integer NUMBER;
@@ -73,11 +74,12 @@ terminal Character CHAR;
 nonterminal rs.etf.pp1.symboltable.concepts.Obj Program, ProgName, Designator, MethodDecl, MethodTypeName, ClassName;
 nonterminal GlobalDecl, ConstDecl, VarDecl, ClassDecl, VarIdent, FormalParamDecl;
 nonterminal DesignatorStatement;
-
+nonterminal rs.etf.pp1.symboltable.concepts.Obj NamespaceDef, NamespaceName; //does NamespaceName need to be obj?
 
 //Lists
 nonterminal GlobalDeclList, MethodDeclList, ConstDeclInnerList, VarDeclInnerList, VarDeclList;
 nonterminal StatementList, FormalParamList, DesignatorList, ActualParamList;
+nonterminal NamespaceList;
 
 //Types and calculations
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact, ConstType;
@@ -100,11 +102,18 @@ nonterminal WhileEnter;
 precedence left ELSE;
 
 //GRAMMAR
-Program ::= (Program) PROG ProgName:p GlobalDeclList LBRACE MethodDeclList RBRACE 
+Program ::= (Program) PROG ProgName:p NamespaceList GlobalDeclList LBRACE MethodDeclList RBRACE 
 ;
 
 ProgName ::= (ProgName) IDENT:pName 
 ;
+
+NamespaceList ::= (NamespaceList) NamespaceList NamespaceDef
+				| (NoNamespace) /* epsilon */
+				
+NamespaceDef ::= (NamespaceDef) NAMESPACE NamespaceName LBRACE GlobalDeclList LBRACE MethodDeclList RBRACE
+
+NamespaceName ::= (NamespaceName) IDENT:nName;
 
 GlobalDeclList ::= (GlobalDeclarations) GlobalDeclList GlobalDecl
 				| (NoGlobalDecl) /* epsilon */
@@ -234,6 +243,7 @@ DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e
 Designator ::= (DesignatorBasic) IDENT:name
 				| (DesignatorElem) IDENT:name LSQUAREBR Expr:e RSQUAREBR
 				| (DesignatorMatrixElem) IDENT:name LSQUAREBR Expr:e1 RSQUAREBR LSQUAREBR Expr:e2 RSQUAREBR
+				| (DesignatorWithNamespace) IDENT:nName DBLCOLON IDENT: dName
 				;
 
 DesignatorList ::= (SingleDesignator) DesignatorWithEmpty
