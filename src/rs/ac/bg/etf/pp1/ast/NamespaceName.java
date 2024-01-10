@@ -5,24 +5,24 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class ProgName implements SyntaxNode {
+public class NamespaceName implements SyntaxNode {
 
     private SyntaxNode parent;
     private int line;
     public rs.etf.pp1.symboltable.concepts.Obj obj = null;
 
-    private String pName;
+    private String nName;
 
-    public ProgName (String pName) {
-        this.pName=pName;
+    public NamespaceName (String nName) {
+        this.nName=nName;
     }
 
-    public String getPName() {
-        return pName;
+    public String getNName() {
+        return nName;
     }
 
-    public void setPName(String pName) {
-        this.pName=pName;
+    public void setNName(String nName) {
+        this.nName=nName;
     }
 
     public SyntaxNode getParent() {
@@ -59,13 +59,13 @@ public class ProgName implements SyntaxNode {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("ProgName(\n");
+        buffer.append("NamespaceName(\n");
 
-        buffer.append(" "+tab+pName);
+        buffer.append(" "+tab+nName);
         buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [ProgName]");
+        buffer.append(") [NamespaceName]");
         return buffer.toString();
     }
 }

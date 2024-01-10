@@ -54,13 +54,14 @@ scan with {:
 :}
 
 //Keywords
-terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH, FINDANY;
+terminal PROG, BREAK, CLASS, ELSE, CONST, IF, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE, FOREACH, FINDANY, NAMESPACE;
 
 //Special Characters
 terminal LBRACE, RBRACE, SEMI, LPAREN, RPAREN, LSQUAREBR, RSQUAREBR, DOT;
 
 //Operators
 terminal PLUS, MINUS, STAR, FWDSLASH, PERC, DBLEQ, EXLEQ, GRT, GRTEQ, LSS, LSSEQ, DBLAMP, DBLVER, COMMA, EQUAL, DBLPLUS, DBLMINUS;
+terminal DBLCOLON;
 
 //Value Tokens
 terminal Integer NUMBER;
@@ -78,7 +79,7 @@ nonterminal ClassDecl ClassDecl;
 nonterminal VarIdent VarIdent;
 nonterminal FormalParamDecl FormalParamDecl;
 nonterminal DesignatorStatement DesignatorStatement;
-
+nonterminal rs.etf.pp1.symboltable.concepts.Obj NamespaceDef, NamespaceName; //does NamespaceName need to be obj?
 
 //Lists
 nonterminal GlobalDeclList GlobalDeclList;
@@ -90,6 +91,7 @@ nonterminal StatementList StatementList;
 nonterminal FormalParamList FormalParamList;
 nonterminal DesignatorList DesignatorList;
 nonterminal ActualParamList ActualParamList;
+nonterminal NamespaceList NamespaceList;
 
 //Types and calculations
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, Expr, Factor, Condition, CondTerm, CondFact, ConstType;
@@ -118,10 +120,20 @@ nonterminal WhileEnter WhileEnter;
 precedence left ELSE;
 
 //GRAMMAR
-Program ::= (Program) PROG ProgName:p GlobalDeclList:G1 LBRACE MethodDeclList:M2 RBRACE {: RESULT=new Program(p, G1, M2); RESULT.setLine(pleft); :} 
+Program ::= (Program) PROG ProgName:p NamespaceList:N1 GlobalDeclList:G2 LBRACE MethodDeclList:M3 RBRACE {: RESULT=new Program(p, N1, G2, M3); RESULT.setLine(pleft); :} 
 ;
 
 ProgName ::= (ProgName) IDENT:pName {: RESULT=new ProgName(pName); RESULT.setLine(pNameleft); :} 
+;
+
+NamespaceList ::= (NamespaceLists) NamespaceList:N1 NamespaceDef:N2 {: RESULT=new NamespaceLists(N1, N2); RESULT.setLine(N1left); :}
+				| (NoNamespace) {: RESULT=new NoNamespace(); :} /* epsilon */
+;
+
+NamespaceDef ::= (NamespaceDef) NAMESPACE NamespaceName:N1 LBRACE GlobalDeclList:G2 LBRACE MethodDeclList:M3 RBRACE {: RESULT=new NamespaceDef(N1, G2, M3); RESULT.setLine(N1left); :}
+;
+
+NamespaceName ::= (NamespaceName) IDENT:nName {: RESULT=new NamespaceName(nName); RESULT.setLine(nNameleft); :}
 ;
 
 GlobalDeclList ::= (GlobalDeclarations) GlobalDeclList:G1 GlobalDecl:G2 {: RESULT=new GlobalDeclarations(G1, G2); RESULT.setLine(G1left); :}
@@ -252,6 +264,7 @@ DesignatorStatement ::= (Assignment) Designator:dest EQUAL Expr:e {: RESULT=new 
 Designator ::= (DesignatorBasic) IDENT:name {: RESULT=new DesignatorBasic(name); RESULT.setLine(nameleft); :}
 				| (DesignatorElem) IDENT:name LSQUAREBR Expr:e RSQUAREBR {: RESULT=new DesignatorElem(name, e); RESULT.setLine(nameleft); :}
 				| (DesignatorMatrixElem) IDENT:name LSQUAREBR Expr:e1 RSQUAREBR LSQUAREBR Expr:e2 RSQUAREBR {: RESULT=new DesignatorMatrixElem(name, e1, e2); RESULT.setLine(nameleft); :}
+				| (DesignatorWithNamespace) IDENT:nName DBLCOLON IDENT: dName {: RESULT=new DesignatorWithNamespace(nName, dName); RESULT.setLine(nNameleft); :}
 				;
 
 DesignatorList ::= (SingleDesignator) DesignatorWithEmpty:D1 {: RESULT=new SingleDesignator(D1); RESULT.setLine(D1left); :}

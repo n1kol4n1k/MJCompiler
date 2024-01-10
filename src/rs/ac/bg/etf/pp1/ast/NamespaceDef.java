@@ -5,42 +5,31 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class Program implements SyntaxNode {
+public class NamespaceDef implements SyntaxNode {
 
     private SyntaxNode parent;
     private int line;
     public rs.etf.pp1.symboltable.concepts.Obj obj = null;
 
-    private ProgName ProgName;
-    private NamespaceList NamespaceList;
+    private NamespaceName NamespaceName;
     private GlobalDeclList GlobalDeclList;
     private MethodDeclList MethodDeclList;
 
-    public Program (ProgName ProgName, NamespaceList NamespaceList, GlobalDeclList GlobalDeclList, MethodDeclList MethodDeclList) {
-        this.ProgName=ProgName;
-        if(ProgName!=null) ProgName.setParent(this);
-        this.NamespaceList=NamespaceList;
-        if(NamespaceList!=null) NamespaceList.setParent(this);
+    public NamespaceDef (NamespaceName NamespaceName, GlobalDeclList GlobalDeclList, MethodDeclList MethodDeclList) {
+        this.NamespaceName=NamespaceName;
+        if(NamespaceName!=null) NamespaceName.setParent(this);
         this.GlobalDeclList=GlobalDeclList;
         if(GlobalDeclList!=null) GlobalDeclList.setParent(this);
         this.MethodDeclList=MethodDeclList;
         if(MethodDeclList!=null) MethodDeclList.setParent(this);
     }
 
-    public ProgName getProgName() {
-        return ProgName;
+    public NamespaceName getNamespaceName() {
+        return NamespaceName;
     }
 
-    public void setProgName(ProgName ProgName) {
-        this.ProgName=ProgName;
-    }
-
-    public NamespaceList getNamespaceList() {
-        return NamespaceList;
-    }
-
-    public void setNamespaceList(NamespaceList NamespaceList) {
-        this.NamespaceList=NamespaceList;
+    public void setNamespaceName(NamespaceName NamespaceName) {
+        this.NamespaceName=NamespaceName;
     }
 
     public GlobalDeclList getGlobalDeclList() {
@@ -80,23 +69,20 @@ public class Program implements SyntaxNode {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(ProgName!=null) ProgName.accept(visitor);
-        if(NamespaceList!=null) NamespaceList.accept(visitor);
+        if(NamespaceName!=null) NamespaceName.accept(visitor);
         if(GlobalDeclList!=null) GlobalDeclList.accept(visitor);
         if(MethodDeclList!=null) MethodDeclList.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(ProgName!=null) ProgName.traverseTopDown(visitor);
-        if(NamespaceList!=null) NamespaceList.traverseTopDown(visitor);
+        if(NamespaceName!=null) NamespaceName.traverseTopDown(visitor);
         if(GlobalDeclList!=null) GlobalDeclList.traverseTopDown(visitor);
         if(MethodDeclList!=null) MethodDeclList.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(ProgName!=null) ProgName.traverseBottomUp(visitor);
-        if(NamespaceList!=null) NamespaceList.traverseBottomUp(visitor);
+        if(NamespaceName!=null) NamespaceName.traverseBottomUp(visitor);
         if(GlobalDeclList!=null) GlobalDeclList.traverseBottomUp(visitor);
         if(MethodDeclList!=null) MethodDeclList.traverseBottomUp(visitor);
         accept(visitor);
@@ -105,16 +91,10 @@ public class Program implements SyntaxNode {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("Program(\n");
+        buffer.append("NamespaceDef(\n");
 
-        if(ProgName!=null)
-            buffer.append(ProgName.toString("  "+tab));
-        else
-            buffer.append(tab+"  null");
-        buffer.append("\n");
-
-        if(NamespaceList!=null)
-            buffer.append(NamespaceList.toString("  "+tab));
+        if(NamespaceName!=null)
+            buffer.append(NamespaceName.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");
@@ -132,7 +112,7 @@ public class Program implements SyntaxNode {
         buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [Program]");
+        buffer.append(") [NamespaceDef]");
         return buffer.toString();
     }
 }

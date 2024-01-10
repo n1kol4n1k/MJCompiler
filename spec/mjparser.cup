@@ -108,12 +108,15 @@ Program ::= (Program) PROG ProgName:p NamespaceList GlobalDeclList LBRACE Method
 ProgName ::= (ProgName) IDENT:pName 
 ;
 
-NamespaceList ::= (NamespaceList) NamespaceList NamespaceDef
+NamespaceList ::= (NamespaceLists) NamespaceList NamespaceDef
 				| (NoNamespace) /* epsilon */
-				
-NamespaceDef ::= (NamespaceDef) NAMESPACE NamespaceName LBRACE GlobalDeclList LBRACE MethodDeclList RBRACE
+;
 
-NamespaceName ::= (NamespaceName) IDENT:nName;
+NamespaceDef ::= (NamespaceDef) NAMESPACE NamespaceName LBRACE GlobalDeclList LBRACE MethodDeclList RBRACE
+;
+
+NamespaceName ::= (NamespaceName) IDENT:nName
+;
 
 GlobalDeclList ::= (GlobalDeclarations) GlobalDeclList GlobalDecl
 				| (NoGlobalDecl) /* epsilon */

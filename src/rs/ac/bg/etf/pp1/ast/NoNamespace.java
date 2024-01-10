@@ -5,9 +5,9 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class InheritanceDerived1 extends Inheritance {
+public class NoNamespace extends NamespaceList {
 
-    public InheritanceDerived1 () {
+    public NoNamespace () {
     }
 
     public void accept(Visitor visitor) {
@@ -28,10 +28,10 @@ public class InheritanceDerived1 extends Inheritance {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("InheritanceDerived1(\n");
+        buffer.append("NoNamespace(\n");
 
         buffer.append(tab);
-        buffer.append(") [InheritanceDerived1]");
+        buffer.append(") [NoNamespace]");
         return buffer.toString();
     }
 }

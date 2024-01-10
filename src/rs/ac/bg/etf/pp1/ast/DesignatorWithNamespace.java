@@ -5,30 +5,30 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class BoolConstIdentValue extends ConstIdentValue {
+public class DesignatorWithNamespace extends Designator {
 
-    private String cName;
-    private Boolean boolValue;
+    private String nName;
+    private String dName;
 
-    public BoolConstIdentValue (String cName, Boolean boolValue) {
-        this.cName=cName;
-        this.boolValue=boolValue;
+    public DesignatorWithNamespace (String nName, String dName) {
+        this.nName=nName;
+        this.dName=dName;
     }
 
-    public String getCName() {
-        return cName;
+    public String getNName() {
+        return nName;
     }
 
-    public void setCName(String cName) {
-        this.cName=cName;
+    public void setNName(String nName) {
+        this.nName=nName;
     }
 
-    public Boolean getBoolValue() {
-        return boolValue;
+    public String getDName() {
+        return dName;
     }
 
-    public void setBoolValue(Boolean boolValue) {
-        this.boolValue=boolValue;
+    public void setDName(String dName) {
+        this.dName=dName;
     }
 
     public void accept(Visitor visitor) {
@@ -49,16 +49,16 @@ public class BoolConstIdentValue extends ConstIdentValue {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("BoolConstIdentValue(\n");
+        buffer.append("DesignatorWithNamespace(\n");
 
-        buffer.append(" "+tab+cName);
+        buffer.append(" "+tab+nName);
         buffer.append("\n");
 
-        buffer.append(" "+tab+boolValue);
+        buffer.append(" "+tab+dName);
         buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [BoolConstIdentValue]");
+        buffer.append(") [DesignatorWithNamespace]");
         return buffer.toString();
     }
 }
