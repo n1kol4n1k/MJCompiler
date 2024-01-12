@@ -130,7 +130,7 @@ NamespaceList ::= (NamespaceLists) NamespaceList:N1 NamespaceDef:N2 {: RESULT=ne
 				| (NoNamespace) {: RESULT=new NoNamespace(); :} /* epsilon */
 ;
 
-NamespaceDef ::= (NamespaceDef) NAMESPACE NamespaceName:N1 LBRACE GlobalDeclList:G2 LBRACE MethodDeclList:M3 RBRACE {: RESULT=new NamespaceDef(N1, G2, M3); RESULT.setLine(N1left); :}
+NamespaceDef ::= (NamespaceDef) NAMESPACE NamespaceName:N1 LBRACE GlobalDeclList:G2 LBRACE MethodDeclList:M3 RBRACE RBRACE {: RESULT=new NamespaceDef(N1, G2, M3); RESULT.setLine(N1left); :}
 ;
 
 NamespaceName ::= (NamespaceName) IDENT:nName {: RESULT=new NamespaceName(nName); RESULT.setLine(nNameleft); :}

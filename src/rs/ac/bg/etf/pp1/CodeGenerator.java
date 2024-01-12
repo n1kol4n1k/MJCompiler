@@ -13,6 +13,7 @@ import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
 import rs.ac.bg.etf.pp1.ast.DesignatorElem;
 import rs.ac.bg.etf.pp1.ast.DesignatorMatrixElem;
+import rs.ac.bg.etf.pp1.ast.DesignatorWithNamespace;
 import rs.ac.bg.etf.pp1.ast.Divop;
 import rs.ac.bg.etf.pp1.ast.EmptyDes;
 import rs.ac.bg.etf.pp1.ast.FactExpr;
@@ -236,7 +237,22 @@ public class CodeGenerator extends VisitorAdaptor {
 		
 	}
 	
-	public void visit(DesignatorBasic designator) {
+	public void visit(DesignatorBasic designator) 
+	{
+		SyntaxNode parent = designator.getParent();
+		if (	Assignment.class != parent.getClass() && 
+				FuncCall.class != parent.getClass() && 
+				StatementFuncCall.class != parent.getClass() &&
+				SingleDesignator.class != parent.getClass() &&
+				NonEmptyDes.class != parent.getClass() &&
+				MultiAssignment.class != parent.getClass()) 
+		{
+			Code.load(designator.obj);
+		}
+	}
+	
+	public void visit(DesignatorWithNamespace designator) 
+	{
 		SyntaxNode parent = designator.getParent();
 		if (	Assignment.class != parent.getClass() && 
 				FuncCall.class != parent.getClass() && 

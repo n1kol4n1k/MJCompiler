@@ -31,6 +31,7 @@ import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
 import rs.ac.bg.etf.pp1.ast.DesignatorElem;
 import rs.ac.bg.etf.pp1.ast.DesignatorMatrixElem;
+import rs.ac.bg.etf.pp1.ast.DesignatorWithNamespace;
 import rs.ac.bg.etf.pp1.ast.EmptyDes;
 import rs.ac.bg.etf.pp1.ast.Equals;
 import rs.ac.bg.etf.pp1.ast.ExprBrackets;
@@ -50,6 +51,8 @@ import rs.ac.bg.etf.pp1.ast.MethodDecl;
 import rs.ac.bg.etf.pp1.ast.MethodVoidName;
 import rs.ac.bg.etf.pp1.ast.MultiAssignment;
 import rs.ac.bg.etf.pp1.ast.MultiDesignator;
+import rs.ac.bg.etf.pp1.ast.NamespaceDef;
+import rs.ac.bg.etf.pp1.ast.NamespaceName;
 import rs.ac.bg.etf.pp1.ast.NegativeExpr;
 import rs.ac.bg.etf.pp1.ast.NewArray;
 import rs.ac.bg.etf.pp1.ast.NewMatrix;
@@ -156,6 +159,20 @@ public class SemanticPass extends VisitorAdaptor {
 		{
 			report_error("Nije pronadjen main metod!", null);
 		}
+	}
+	
+	//Entering namespace
+	public void visit(NamespaceName namespaceName)
+	{
+		namespaceName.obj = Tab.insert(Obj.Type, namespaceName.getNName(), Tab.noType);
+		Tab.openScope();
+	}
+	
+	//Exiting namespace
+	public void visit(NamespaceDef namespaceDef)
+	{
+		Tab.chainLocalSymbols(namespaceDef.getNamespaceName().obj);
+		Tab.closeScope();
 	}
 
 	//Declaration of Variable(s)
@@ -741,15 +758,38 @@ public class SemanticPass extends VisitorAdaptor {
 	}
 
 	//Designators
-	public void visit(DesignatorBasic designatorBasic){
+	public void visit(DesignatorBasic designatorBasic)
+	{
 		Obj obj = Tab.find(designatorBasic.getName());
-		if (obj == Tab.noObj) { 
+		if (obj == Tab.noObj) 
+		{ 
 			report_error("Greska na liniji " + designatorBasic.getLine()+ " : ime "+designatorBasic.getName()+" nije deklarisano! ", null);
 		}
 		designatorBasic.obj = obj;
 	}
 	
-	public void visit(DesignatorElem designatorElem){
+	public void visit(DesignatorWithNamespace designatorWithNamespace)
+	{
+		Obj namespaceObj = Tab.find(designatorWithNamespace.getNName());
+		if (namespaceObj == Tab.noObj) 
+		{ 
+			report_error("Greska na liniji " + designatorWithNamespace.getLine()+ " : namespace ime "+designatorWithNamespace.getNName()+" nije deklarisano! ", null);
+			return;
+		}
+		
+		for(Obj it : namespaceObj.getLocalSymbols())
+		{
+			if(it.getName().equals(designatorWithNamespace.getDName()))
+			{
+				designatorWithNamespace.obj = it;
+				return;
+			}
+		}
+		report_error("Greska na liniji " + designatorWithNamespace.getLine()+ " : namespace ime "+designatorWithNamespace.getNName()+" ne sadrzi promenljivu "+designatorWithNamespace.getDName(), null);
+	}
+	
+	public void visit(DesignatorElem designatorElem)
+	{
 		
 		if(designatorElem.getExpr().struct.equals(Tab.intType) == false)
 		{
@@ -776,7 +816,8 @@ public class SemanticPass extends VisitorAdaptor {
 		designatorElem.obj = obj;
 	}
 	
-public void visit(DesignatorMatrixElem designatorMatrixElem){
+	public void visit(DesignatorMatrixElem designatorMatrixElem)
+	{
 		
 		if(designatorMatrixElem.getExpr().struct.equals(Tab.intType) == false
 				|| designatorMatrixElem.getExpr1().struct.equals(Tab.intType) == false)

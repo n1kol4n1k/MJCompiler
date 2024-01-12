@@ -112,7 +112,7 @@ NamespaceList ::= (NamespaceLists) NamespaceList NamespaceDef
 				| (NoNamespace) /* epsilon */
 ;
 
-NamespaceDef ::= (NamespaceDef) NAMESPACE NamespaceName LBRACE GlobalDeclList LBRACE MethodDeclList RBRACE
+NamespaceDef ::= (NamespaceDef) NAMESPACE NamespaceName LBRACE GlobalDeclList LBRACE MethodDeclList RBRACE RBRACE
 ;
 
 NamespaceName ::= (NamespaceName) IDENT:nName

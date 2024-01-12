@@ -1,0 +1,26 @@
+// Namespaces first test
+
+program test301
+namespace sizes
+{
+	int a;
+	int abc;
+	{}
+}
+	int a, b;
+	
+{
+	void main()	
+	{
+		a = 10;
+		b = 20;
+		sizes::a = 30;
+
+		print(a);
+		print(b);
+		print(sizes::a);
+
+		sizes::abc = 45;
+		print(sizes::abc);
+	}
+}
