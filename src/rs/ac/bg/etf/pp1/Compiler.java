@@ -70,6 +70,7 @@ public class Compiler
 	        	codeGenerator.SetFormParmsMap(semanticCheck.GetFormParmsMap());
 	        	codeGenerator.SetBoolType(semanticCheck.boolType);
 	        	codeGenerator.m_Counter = semanticCheck.m_HelperVar;
+	        	//codeGenerator.m_Namespaces = semanticCheck.m_Namespaces;
 	        	prog.traverseBottomUp(codeGenerator);
 	        	Code.dataSize = semanticCheck.nVars;
 	        	Code.mainPc = codeGenerator.getMainPc();

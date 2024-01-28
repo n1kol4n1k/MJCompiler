@@ -12,6 +12,7 @@ import rs.ac.bg.etf.pp1.ast.ConstNum;
 import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
 import rs.ac.bg.etf.pp1.ast.DesignatorElem;
+import rs.ac.bg.etf.pp1.ast.DesignatorElemWithNamespace;
 import rs.ac.bg.etf.pp1.ast.DesignatorMatrixElem;
 import rs.ac.bg.etf.pp1.ast.DesignatorWithNamespace;
 import rs.ac.bg.etf.pp1.ast.Divop;
@@ -27,6 +28,8 @@ import rs.ac.bg.etf.pp1.ast.MethodVoidName;
 import rs.ac.bg.etf.pp1.ast.Minusop;
 import rs.ac.bg.etf.pp1.ast.Mulop;
 import rs.ac.bg.etf.pp1.ast.MultiAssignment;
+import rs.ac.bg.etf.pp1.ast.NamespaceDef;
+import rs.ac.bg.etf.pp1.ast.NamespaceName;
 import rs.ac.bg.etf.pp1.ast.NegativeExpr;
 import rs.ac.bg.etf.pp1.ast.NewArray;
 import rs.ac.bg.etf.pp1.ast.NewMatrix;
@@ -63,6 +66,7 @@ public class CodeGenerator extends VisitorAdaptor {
 	
 	boolean m_IsClassScope = false;
 	int m_NumOfPrints = 1;
+	public HashMap<String, Obj> m_Namespaces = null;
 	
 	enum DataType
 	{
@@ -105,6 +109,20 @@ public class CodeGenerator extends VisitorAdaptor {
 	}
 	MulopType m_Mulop = MulopType.None;
 	AddopType m_Addop = AddopType.None;
+	
+	boolean m_NamespaceScope = false;
+	
+	//Entering namespace
+	public void visit(NamespaceName namespaceName)
+	{
+		m_NamespaceScope = true;
+	}
+	
+	//Exiting namespace
+	public void visit(NamespaceDef namespaceDef)
+	{
+		m_NamespaceScope = false;
+	}
 	
 	//Classes scope detection, to ignore generating code for it
 	public void visit(ClassDeclEnter classDeclEnter)
@@ -280,6 +298,32 @@ public class CodeGenerator extends VisitorAdaptor {
 			if(designator.obj.getKind() == Obj.Elem)
 			{
 				Code.load(m_LastArray);
+				Code.put(Code.dup_x1);
+				Code.put(Code.pop);
+			}
+			Code.load(designator.obj);
+		}
+	}
+	
+	public void visit(DesignatorElemWithNamespace designator) {
+		//TODO: error if name same as in other namespaces, need namespace to put in check
+		m_LastArray = m_ArrayObjs.get(designator.getNName()+designator.getDName());
+		
+		SyntaxNode parent = designator.getParent();
+		if (	Assignment.class != parent.getClass() && 
+				FuncCall.class != parent.getClass() && 
+				StatementFuncCall.class != parent.getClass() &&
+				SingleDesignator.class != parent.getClass() &&
+				NonEmptyDes.class != parent.getClass() &&
+				MultiAssignment.class != parent.getClass()) 
+		{
+			//Expand stack for element
+			if(designator.obj.getKind() == Obj.Elem)
+			{
+				Code.load(m_LastArray);
+				//We process namespace array values as globals
+				//Code.put(Code.getstatic);
+				//Code.put(designator.obj.getAdr());
 				Code.put(Code.dup_x1);
 				Code.put(Code.pop);
 			}
@@ -489,6 +533,15 @@ public class CodeGenerator extends VisitorAdaptor {
 		Code.put2(offset);
 		//Return will put return value on stact via expr!
 	}
+	
+	public void visit(StatementFuncCall statementFuncCall)
+	{
+		Obj funcObj = statementFuncCall.getDesignator().obj;
+		int offset = funcObj.getAdr() - Code.pc; 
+		Code.put(Code.call);
+		Code.put2(offset);
+	}
+	
 	public void visit(NewArray newArray)
 	{
 		Code.put(Code.newarray);

@@ -22,11 +22,11 @@ parser code {:
     }
   
     public void syntax_error(Symbol cur_token) {
-        report_error("\nSintaksna greska", cur_token);
+        report_error("\nSintaksnaaa greska", cur_token);
     }
   
     public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
-        report_fatal_error("Fatalna greska, parsiranje se ne moze nastaviti", cur_token);
+        report_fatal_error("Fatalnaaa greska, parsiranje se ne moze nastaviti", cur_token);
     }
 
     public void report_error(String message, Object info) {
@@ -265,6 +265,7 @@ Designator ::= (DesignatorBasic) IDENT:name {: RESULT=new DesignatorBasic(name);
 				| (DesignatorElem) IDENT:name LSQUAREBR Expr:e RSQUAREBR {: RESULT=new DesignatorElem(name, e); RESULT.setLine(nameleft); :}
 				| (DesignatorMatrixElem) IDENT:name LSQUAREBR Expr:e1 RSQUAREBR LSQUAREBR Expr:e2 RSQUAREBR {: RESULT=new DesignatorMatrixElem(name, e1, e2); RESULT.setLine(nameleft); :}
 				| (DesignatorWithNamespace) IDENT:nName DBLCOLON IDENT: dName {: RESULT=new DesignatorWithNamespace(nName, dName); RESULT.setLine(nNameleft); :}
+				| (DesignatorElemWithNamespace) IDENT:nName DBLCOLON IDENT: dName LSQUAREBR Expr:e RSQUAREBR {: RESULT=new DesignatorElemWithNamespace(nName, dName, e); RESULT.setLine(nNameleft); :}
 				;
 
 DesignatorList ::= (SingleDesignator) DesignatorWithEmpty:D1 {: RESULT=new SingleDesignator(D1); RESULT.setLine(D1left); :}

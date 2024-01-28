@@ -30,6 +30,7 @@ import rs.ac.bg.etf.pp1.ast.ContinueStmt;
 import rs.ac.bg.etf.pp1.ast.Decrement;
 import rs.ac.bg.etf.pp1.ast.DesignatorBasic;
 import rs.ac.bg.etf.pp1.ast.DesignatorElem;
+import rs.ac.bg.etf.pp1.ast.DesignatorElemWithNamespace;
 import rs.ac.bg.etf.pp1.ast.DesignatorMatrixElem;
 import rs.ac.bg.etf.pp1.ast.DesignatorWithNamespace;
 import rs.ac.bg.etf.pp1.ast.EmptyDes;
@@ -126,6 +127,9 @@ public class SemanticPass extends VisitorAdaptor {
 	ArrayList<Struct> m_currentActualParamsTypes = new ArrayList<Struct>();
 	ArrayList<Obj> m_MultiAssignmentDesignators = new ArrayList<Obj>();
 	
+	public HashMap<String, ArrayList<Obj>> m_Namespaces = new HashMap<String, ArrayList<Obj>>();
+	String m_CurrentNamespace = "";
+	
 	//Symbol Table expansion with bool standard type
 	public void ExpandSymTable()
 	{
@@ -164,15 +168,14 @@ public class SemanticPass extends VisitorAdaptor {
 	//Entering namespace
 	public void visit(NamespaceName namespaceName)
 	{
-		namespaceName.obj = Tab.insert(Obj.Type, namespaceName.getNName(), Tab.noType);
-		Tab.openScope();
+		m_CurrentNamespace = namespaceName.getNName();
+		Tab.insert(Obj.Type, m_CurrentNamespace, Tab.noType);
 	}
 	
 	//Exiting namespace
 	public void visit(NamespaceDef namespaceDef)
 	{
-		Tab.chainLocalSymbols(namespaceDef.getNamespaceName().obj);
-		Tab.closeScope();
+		m_CurrentNamespace = "";
 	}
 
 	//Declaration of Variable(s)
@@ -185,19 +188,20 @@ public class SemanticPass extends VisitorAdaptor {
 		}
 		for(VarInfo varInfo : m_innerVarList)
 		{
-			if(Tab.currentScope.findSymbol(varInfo.m_Name) != null)
+			if(Tab.currentScope.findSymbol(m_CurrentNamespace+varInfo.m_Name) != null)
 			{
 				report_error("Greska, promenljiva " + varInfo.m_Name + " vec postoji deklarisana!", varDecl);
 				continue;
 			}
-			report_info("Deklarisana promenljiva "+ varInfo.m_Name, varDecl);
+			
+			report_info("Deklarisana promenljiva "+ varInfo.m_Name +" u opsegu " + m_CurrentNamespace, varDecl);
 			if(varInfo.m_IsArray == true)
 			{
-				Tab.insert(Obj.Var, varInfo.m_Name, new Struct(Struct.Array, varDecl.getType().struct));
+				Tab.insert(Obj.Var, m_CurrentNamespace + varInfo.m_Name, new Struct(Struct.Array, varDecl.getType().struct));
 			}
 			else
 			{
-				Tab.insert(Obj.Var, varInfo.m_Name, varDecl.getType().struct);
+				Tab.insert(Obj.Var, m_CurrentNamespace+ varInfo.m_Name, varDecl.getType().struct);
 			}
 		}
 		m_innerVarList.clear();
@@ -258,7 +262,7 @@ public class SemanticPass extends VisitorAdaptor {
 			return;
 		}
 		
-		Obj newConst = Tab.insert(Obj.Con, intConstIdentValue.getCName(), Tab.intType);
+		Obj newConst = Tab.insert(Obj.Con, m_CurrentNamespace+intConstIdentValue.getCName(), Tab.intType);
 		newConst.setAdr(intConstIdentValue.getNumValue());
 	}
 	
@@ -270,7 +274,7 @@ public class SemanticPass extends VisitorAdaptor {
 			return;
 		}
 
-		Obj newConst = Tab.insert(Obj.Con, boolConstIdentValue.getCName(), boolType);
+		Obj newConst = Tab.insert(Obj.Con, m_CurrentNamespace+boolConstIdentValue.getCName(), boolType);
 		newConst.setAdr(boolConstIdentValue.getBoolValue() ? 1 : 0);
 	}
 	
@@ -282,7 +286,7 @@ public class SemanticPass extends VisitorAdaptor {
 			return;
 		}
 
-		Obj newConst = Tab.insert(Obj.Con, charConstIdentValue.getCName(), Tab.charType);
+		Obj newConst = Tab.insert(Obj.Con, m_CurrentNamespace+charConstIdentValue.getCName(), Tab.charType);
 		newConst.setAdr(charConstIdentValue.getCharValue());
 	}
 	
@@ -307,7 +311,7 @@ public class SemanticPass extends VisitorAdaptor {
 			report_error("Greska: main() funkcija ne sme da vraca vrednost!", methodBasicTypeName);
 		}
 		
-		m_currentMethod = Tab.insert(Obj.Meth, methodBasicTypeName.getMethName(), methodBasicTypeName.getType().struct);
+		m_currentMethod = Tab.insert(Obj.Meth, m_CurrentNamespace+methodBasicTypeName.getMethName(), methodBasicTypeName.getType().struct);
 		methodBasicTypeName.obj = m_currentMethod;
 		m_formParmsMap.put(m_currentMethod, new ArrayList<Struct>());
 		Tab.openScope();
@@ -317,7 +321,7 @@ public class SemanticPass extends VisitorAdaptor {
 	public void visit(MethodVoidName methodVoidName) {
 		if(m_IsClassScope == true) { return; }
 		
-		m_currentMethod = Tab.insert(Obj.Meth, methodVoidName.getMethName(), Tab.noType);
+		m_currentMethod = Tab.insert(Obj.Meth, m_CurrentNamespace+methodVoidName.getMethName(), Tab.noType);
 		methodVoidName.obj = m_currentMethod;
 		//Check if it is main method
 		if(methodVoidName.getMethName().equals("main"))
@@ -369,13 +373,13 @@ public class SemanticPass extends VisitorAdaptor {
 		{
 			report_error("Greska: main metod NE sme imati parametre!", formalParamDecl);
 		}
-		if(Tab.currentScope.findSymbol(formalParamDecl.getFpName()) != null)
+		if(Tab.currentScope.findSymbol( m_CurrentNamespace+formalParamDecl.getFpName()) != null)
 		{
 			report_error("Greska, formalni parametar " + formalParamDecl.getFpName() + " vec postoji deklarisan!", formalParamDecl);
 		}
 		
 		Struct paramType = formalParamDecl.getType().struct;
-		Tab.insert(Obj.Var, formalParamDecl.getFpName(), paramType);
+		Tab.insert(Obj.Var, m_CurrentNamespace+formalParamDecl.getFpName(), paramType);
 		ArrayList<Struct> currMethodFormParams = m_formParmsMap.get(m_currentMethod);
 		currMethodFormParams.add(paramType);
 	}
@@ -760,7 +764,7 @@ public class SemanticPass extends VisitorAdaptor {
 	//Designators
 	public void visit(DesignatorBasic designatorBasic)
 	{
-		Obj obj = Tab.find(designatorBasic.getName());
+		Obj obj = Tab.find(m_CurrentNamespace+designatorBasic.getName());
 		if (obj == Tab.noObj) 
 		{ 
 			report_error("Greska na liniji " + designatorBasic.getLine()+ " : ime "+designatorBasic.getName()+" nije deklarisano! ", null);
@@ -777,13 +781,11 @@ public class SemanticPass extends VisitorAdaptor {
 			return;
 		}
 		
-		for(Obj it : namespaceObj.getLocalSymbols())
+		Obj desObj = Tab.find(designatorWithNamespace.getNName()+designatorWithNamespace.getDName());
+		if(desObj != Tab.noObj)
 		{
-			if(it.getName().equals(designatorWithNamespace.getDName()))
-			{
-				designatorWithNamespace.obj = it;
-				return;
-			}
+			designatorWithNamespace.obj = desObj;
+			return;
 		}
 		report_error("Greska na liniji " + designatorWithNamespace.getLine()+ " : namespace ime "+designatorWithNamespace.getNName()+" ne sadrzi promenljivu "+designatorWithNamespace.getDName(), null);
 	}
@@ -796,7 +798,7 @@ public class SemanticPass extends VisitorAdaptor {
 			report_error("Indeks niza " + designatorElem.getName() + " mora da bude tipa int ", designatorElem);
 		}
 		
-		Obj obj = Tab.find(designatorElem.getName());
+		Obj obj = Tab.find(m_CurrentNamespace+designatorElem.getName());
 		if (obj == Tab.noObj) 
 		{ 
 			report_error("Greska na liniji " + designatorElem.getLine()+ " : ime "+designatorElem.getName()+" nije deklarisano! ", null);
@@ -814,6 +816,38 @@ public class SemanticPass extends VisitorAdaptor {
 		}
 		
 		designatorElem.obj = obj;
+	}
+	
+	public void visit(DesignatorElemWithNamespace designator) 
+	{
+		if(designator.getExpr().struct.equals(Tab.intType) == false)
+		{
+			report_error("Indeks niza " + designator.getDName() + " mora da bude tipa int ", designator);
+		}
+		
+		Obj namespaceObj = Tab.find(designator.getNName());
+		if (namespaceObj == Tab.noObj) 
+		{ 
+			report_error("Greska na liniji " + designator.getLine()+ " : namespace ime "+designator.getNName()+" nije deklarisano! ", null);
+			return;
+		}
+		
+		Obj desObj = Tab.find(designator.getNName()+designator.getDName());
+		if(desObj != Tab.noObj)
+		{
+			if(desObj.getType().getKind() == Struct.Array)
+			{
+				desObj = new Obj(Obj.Elem, "Elem", desObj.getType().getElemType());
+			}
+			else
+			{
+				report_error("Greska: " + desObj.getName() + " ne predstavlja niz ", designator);
+				return;
+			}
+			designator.obj = desObj;
+			return;
+		}
+		report_error("Greska na liniji " + designator.getLine()+ " : namespace ime "+designator.getNName()+" ne sadrzi promenljivu "+designator.getDName(), null);
 	}
 	
 	public void visit(DesignatorMatrixElem designatorMatrixElem)

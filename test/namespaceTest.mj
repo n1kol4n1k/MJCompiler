@@ -1,15 +1,29 @@
 // Namespaces first test
 
-program test301
+program testNamespace
 namespace sizes
 {
 	int a;
 	int abc;
-	{}
+	{
+		void PrintSome(int arg1)
+		int a;
+		{
+			a = 123;
+			print(a);
+			print(arg1);
+		}
+	}
 }
 	int a, b;
 	
 {
+	void Printer(int arg1)
+	int b;	
+	{
+		b = 321;
+		print(b); print(arg1);
+	}
 	void main()	
 	{
 		a = 10;
@@ -20,7 +34,9 @@ namespace sizes
 		print(b);
 		print(sizes::a);
 
-		sizes::abc = 45;
+		sizes::abc = 46;
 		print(sizes::abc);
+		Printer(66);
+		sizes::PrintSome(55);
 	}
 }

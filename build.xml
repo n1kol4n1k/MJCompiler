@@ -59,7 +59,7 @@
 
 	<target name="disasm">
 		<java classname="rs.etf.pp1.mj.runtime.disasm">
-			<arg value="test/test301.obj"/>
+			<arg value="test/namespaceTest.obj"/>
 			<classpath>
 				<pathelement location="lib/mj-runtime-1.1.jar"/>
 			</classpath>
